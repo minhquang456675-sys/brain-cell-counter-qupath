@@ -1,4 +1,4 @@
-"""Launch the modern interface, with the proven classic UI as a fallback."""
+"""Launch the integrated Qt interface or an explicitly requested classic UI."""
 
 from __future__ import annotations
 
@@ -8,21 +8,21 @@ from pathlib import Path
 
 
 def main() -> None:
-    """Select Qt by default while retaining an explicit compatibility path."""
+    """Use Qt by default and reserve the classic shell for explicit recovery."""
+    error_path = Path(__file__).resolve().parent / "brain_cell_counter_startup_error.log"
+    try:
+        error_path.unlink(missing_ok=True)
+    except OSError:
+        # A stale diagnostic must never prevent the application from starting.
+        pass
     if "--classic" in sys.argv:
         sys.argv.remove("--classic")
         from brain_cell_counter.hybrid_app import main as selected_main
     else:
-        try:
-            from brain_cell_counter.qt_app import main as selected_main
-        except ImportError:
-            # Older source checkouts can still start before the optional Qt
-            # dependency is installed; the v2 installer always provides it.
-            from brain_cell_counter.hybrid_app import main as selected_main
+        from brain_cell_counter.qt_app import main as selected_main
     try:
         selected_main()
     except Exception as exc:
-        error_path = Path(__file__).resolve().parent / "brain_cell_counter_startup_error.log"
         error_path.write_text(traceback.format_exc(), encoding="utf-8")
         if sys.platform == "win32":
             try:

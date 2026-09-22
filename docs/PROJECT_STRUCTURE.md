@@ -7,11 +7,13 @@ scripts, documentation, installers, and generated files do not become mixed.
 Flourescent counting/
 ├── brain_cell_counter/          Python application package
 │   ├── qt_app.py                Default PySide6 interface
+│   ├── qt_results.py            Native Qt results preview and compact export
 │   ├── hybrid_app.py            Classic compatibility interface
 │   ├── app_core.py              Shared project and process controller
 │   ├── threshold_optimizer.py   Global-threshold algorithms and reports
 │   ├── calibration.py           Calibration data model and calculations
 │   ├── calibration_wizard.py    Human-reviewed calibration workflow
+│   ├── calibration_runner.py    Dedicated calibration-only launcher
 │   ├── results_preview.py       Results table and QuPath-opening tools
 │   ├── version.py               Application and output-schema versions
 │   └── test_*.py                Automated regression tests

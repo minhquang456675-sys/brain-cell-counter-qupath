@@ -2,6 +2,26 @@
 
 All user-visible releases follow semantic versioning.
 
+## 2.2.0 — 2026-09-22
+
+### Added
+
+- Global threshold optimization is now integrated into the Qt Thresholds page,
+  including channel-pair objectives, candidate ranges, plateau rules,
+  background separation, report generation, and threshold locking.
+- The Qt Results page now previews complete regional CSV tables, provides
+  measurement presets and column selection, exports compact CSV files, and
+  opens the exact saved image entry in QuPath.
+- The Qt workflow now includes native project-link repair and non-saving
+  Cellpose parameter suggestion.
+
+### Changed
+
+- Calibration opens its focused human-review wizard directly instead of
+  launching the complete classic application window.
+- The default launcher no longer silently falls back to the classic interface
+  when Qt is unavailable; it reports the missing dependency as a startup error.
+
 ## 2.1.3 — 2026-09-22
 
 ### Fixed

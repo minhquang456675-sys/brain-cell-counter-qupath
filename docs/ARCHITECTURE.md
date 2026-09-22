@@ -6,8 +6,10 @@
 |---|---|---|
 | Launcher | `run_brain_cell_counter_v1.0.py` | Starts the desktop application. |
 | Shared application core | `brain_cell_counter/app_core.py` | Toolkit-independent project parsing, parameter validation, and QuPath command construction. |
-| Qt GUI | `brain_cell_counter/qt_app.py` | Default modern interface and sequential validation, analysis, and atlas-import queues. |
-| Classic GUI | `brain_cell_counter/hybrid_app.py` | Compatibility interface for calibration and threshold workflows while their Qt pages are completed. |
+| Qt GUI | `brain_cell_counter/qt_app.py` | Integrated interface and sequential validation, analysis, atlas-import, threshold, preflight, and Cellpose-suggestion queues. |
+| Qt results | `brain_cell_counter/qt_results.py` | Native result preview, column presets, compact export, and exact-entry QuPath launch. |
+| Calibration runner | `brain_cell_counter/calibration_runner.py` | Opens only the human-reviewed calibration wizard in an isolated event loop. |
+| Classic GUI | `brain_cell_counter/hybrid_app.py` | Explicit recovery interface retained for compatibility; it is not opened by the standard workflow. |
 | Threshold optimizer | `brain_cell_counter/threshold_optimizer.py` | Dataset-level threshold calculations and CSV, JSON, and HTML reports. |
 | Calibration model | `brain_cell_counter/calibration.py` | Scale-bar endpoint proposals, physical-unit conversion, project matching, manifests, and backups. |
 | Calibration wizard | `brain_cell_counter/calibration_wizard.py` | Sequential multi-image preview generation, human review, and confirmed QuPath metadata writes. |

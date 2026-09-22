@@ -2,13 +2,13 @@
 
 ## Interface layout
 
-Version 2 opens the PySide6/Qt interface by default. It adds rounded cards and
-controls, hover and pressed feedback, soft page transitions, subtle elevation,
-automatic monitor sizing, and a fixed workflow sidebar. Calibration, the full
-threshold-audit interface, and the complete Results Preview remain available
-through **Open calibration**, **Open threshold finder**, and **Open full results
-tools**, which start the classic compatibility window without changing the
-scientific engine or saved settings.
+Version 2 opens the integrated PySide6/Qt interface by default. It adds rounded
+cards and controls, hover and pressed feedback, soft page transitions, subtle
+elevation, automatic monitor sizing, and a fixed workflow sidebar. Global
+threshold optimization, Results Preview, project-link repair, and Cellpose
+parameter suggestion are available directly in this interface. **Open
+calibration** starts only the focused human-review wizard; it does not open the
+classic application shell.
 
 The current project bar stays visible across the application and reports the
 project name, entry count, selected image, and ABBA readiness.
@@ -30,16 +30,15 @@ The main window follows the scientific workflow:
   analysis behavior into numbered sections. Cellprob, Flow, and automatic
   Cellpose suggestions are available through **Advanced Cellpose settings…**
   and **AUTO SUGGEST CELLPOSE**.
-- **3 THRESHOLDS** shows the usual dataset scope, threshold type, background
-  guard, threshold lock, and run button. Candidate ranges and plateau criteria
-  open in the separate **Advanced plateau settings…** window.
+- **3 THRESHOLDS** includes dataset scope, threshold type, background guard,
+  threshold lock, candidate ranges, plateau criteria, and the run button.
 - **4 RESULTS** loads regional CSV files and provides measurement presets.
-  **Choose columns…** opens the complete checkbox list in a separate
-  scrollable window so long column names do not widen the main application.
+  **Choose columns…** opens the complete checkbox list in a separate scrollable
+  Qt window so long column names do not widen the main application.
 
-Closing either advanced-settings window retains its current values; closing a
-window does not reset or disable its parameters. Repeated clicks bring the
-existing window forward instead of creating duplicate settings windows.
+Closing the calibration or column-selection window does not modify the master
+result files. Threshold and analysis values remain visible in their pages and
+are stored with the application settings.
 
 The **VALIDATE**, **ANALYZE**, cancellation, progress, run-log, and results
 controls remain visible at the bottom while switching tabs. Use **VALIDATE**
