@@ -2,6 +2,17 @@
 
 All user-visible releases follow semantic versioning.
 
+## 2.1.2 — 2026-09-22
+
+### Fixed
+
+- The Qt window is now restored, temporarily raised above other windows, and
+  activated immediately and again after startup so shortcut launches do not
+  remain hidden behind Explorer, Codex, or QuPath.
+- Startup exceptions from `pythonw.exe` now create
+  `brain_cell_counter_startup_error.log` and display a visible Windows error
+  dialog instead of failing silently.
+
 ## 2.1.1 — 2026-09-22
 
 ### Fixed

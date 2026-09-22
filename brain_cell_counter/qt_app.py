@@ -11,9 +11,10 @@ import json
 import os
 import subprocess
 import sys
+import ctypes
 from pathlib import Path
 
-from PySide6.QtCore import QEasingCurve, QProcess, QPropertyAnimation, Qt, QUrl
+from PySide6.QtCore import QEasingCurve, QProcess, QPropertyAnimation, QTimer, Qt, QUrl
 from PySide6.QtGui import QAction, QColor, QDesktopServices, QFont, QKeySequence
 from PySide6.QtWidgets import (
     QApplication,
@@ -101,6 +102,27 @@ def _button(text: str, *, primary: bool = False, accent: bool = False) -> QPushB
     button.setProperty("accent", accent)
     button.setCursor(Qt.CursorShape.PointingHandCursor)
     return button
+
+
+def activate_main_window(window: QMainWindow) -> None:
+    """Restore and foreground the main window after a shortcut launch."""
+    window.showNormal()
+    window.raise_()
+    window.activateWindow()
+    QApplication.setActiveWindow(window)
+    if os.name != "nt":
+        return
+    try:
+        handle = int(window.winId())
+        user32 = ctypes.windll.user32
+        no_move_or_size = 0x0001 | 0x0002 | 0x0040
+        user32.ShowWindow(handle, 9)  # SW_RESTORE
+        user32.SetWindowPos(handle, -1, 0, 0, 0, 0, no_move_or_size)
+        user32.SetWindowPos(handle, -2, 0, 0, 0, 0, no_move_or_size)
+        user32.SetForegroundWindow(handle)
+    except (AttributeError, OSError, ValueError):
+        # Qt activation above remains the portable fallback.
+        return
 
 
 def _card(title: str, description: str = "") -> tuple[QFrame, QVBoxLayout]:
@@ -902,7 +924,8 @@ def main() -> None:
     app.setStyle("Fusion")
     app.setStyleSheet(STYLE)
     window = BrainCellCounterQt()
-    window.show()
+    activate_main_window(window)
+    QTimer.singleShot(250, lambda: activate_main_window(window))
     raise SystemExit(app.exec())
 
 
