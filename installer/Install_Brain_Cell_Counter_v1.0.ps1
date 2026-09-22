@@ -16,7 +16,7 @@ $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-$ProductName = "Brain Cell Counter v2.1.0"
+$ProductName = "Brain Cell Counter v2.1.1"
 $InstallRoot = Join-Path $env:LOCALAPPDATA "BrainCellCounter"
 $CacheRoot = Join-Path $InstallRoot "installer-cache"
 $MiniforgeRoot = Join-Path $env:USERPROFILE "miniforge3"
@@ -25,7 +25,7 @@ $QuPathRoot = Join-Path $env:LOCALAPPDATA "QuPath-0.7.0"
 $QuPathConsole = Join-Path $QuPathRoot "QuPath-0.7.0 (console).exe"
 $AbbaRoot = Join-Path $env:LOCALAPPDATA "ABBA-Python-0.11.0"
 $PayloadArchive = Join-Path $PSScriptRoot "payload.zip"
-$LogPath = Join-Path $env:TEMP "Brain_Cell_Counter_v2.1.0_install.log"
+$LogPath = Join-Path $env:TEMP "Brain_Cell_Counter_v2.1.1_install.log"
 . (Join-Path $PSScriptRoot "Merge_QuPath_Extension_Registry.ps1")
 $script:StepNumber = 0
 $script:TotalSteps = 9
@@ -140,10 +140,17 @@ function Get-NvidiaGpuNames {
 }
 
 function New-Shortcut {
-    param([string]$Path, [string]$TargetPath, [string]$WorkingDirectory, [string]$IconLocation)
+    param(
+        [string]$Path,
+        [string]$TargetPath,
+        [string]$Arguments = "",
+        [string]$WorkingDirectory,
+        [string]$IconLocation
+    )
     $shell = New-Object -ComObject WScript.Shell
     $shortcut = $shell.CreateShortcut($Path)
     $shortcut.TargetPath = $TargetPath
+    $shortcut.Arguments = $Arguments
     $shortcut.WorkingDirectory = $WorkingDirectory
     if ($IconLocation) {
         $shortcut.IconLocation = $IconLocation
@@ -318,7 +325,7 @@ try {
     $launcherLines = @(
         "@echo off",
         "cd /d `"$InstallRoot`"",
-        "start `"Brain Cell Counter v2.1.0`" `"$($CellposePython.Replace('python.exe', 'pythonw.exe'))`" `"$InstallRoot\run_brain_cell_counter_v1.0.py`""
+        "start `"Brain Cell Counter v2.1.1`" `"$($CellposePython.Replace('python.exe', 'pythonw.exe'))`" `"$InstallRoot\run_brain_cell_counter_v1.0.py`""
     )
     Set-Content -LiteralPath $launcherPath -Value $launcherLines -Encoding ASCII
     $verifyLauncher = Join-Path $InstallRoot "Verify_Installation.cmd"
@@ -328,7 +335,11 @@ try {
         "pause"
     )
     $desktop = [Environment]::GetFolderPath("Desktop")
-    New-Shortcut -Path (Join-Path $desktop "Brain Cell Counter.lnk") -TargetPath $launcherPath -WorkingDirectory $InstallRoot -IconLocation "$env:SystemRoot\System32\shell32.dll,14"
+    $cellposePythonw = $CellposePython.Replace('python.exe', 'pythonw.exe')
+    $applicationScript = Join-Path $InstallRoot "run_brain_cell_counter_v1.0.py"
+    $shortcutArguments = "`"$applicationScript`""
+    New-Shortcut -Path (Join-Path $desktop "Brain Cell Counter.lnk") -TargetPath $cellposePythonw -Arguments $shortcutArguments -WorkingDirectory $InstallRoot -IconLocation "$env:SystemRoot\System32\shell32.dll,14"
+    New-Shortcut -Path (Join-Path $InstallRoot "Brain Cell Counter.lnk") -TargetPath $cellposePythonw -Arguments $shortcutArguments -WorkingDirectory $InstallRoot -IconLocation "$env:SystemRoot\System32\shell32.dll,14"
     New-Shortcut -Path (Join-Path $desktop "QuPath 0.7.0.lnk") -TargetPath $QuPathConsole -WorkingDirectory $QuPathRoot -IconLocation "$QuPathConsole,0"
 
     Write-Step "Verifying the complete installation"
@@ -340,7 +351,7 @@ try {
 
     Write-Step "Installation complete"
     Write-InstallLog "$ProductName was installed successfully." Green
-    Write-InstallLog "Desktop shortcut: Brain Cell Counter (v2.1.0)" Green
+    Write-InstallLog "Desktop shortcut: Brain Cell Counter (v2.1.1)" Green
     Write-InstallLog "Installation report: $InstallRoot\Installation_Report.txt" Green
     Write-Host ""
     Write-Host "IMPORTANT:" -ForegroundColor Yellow

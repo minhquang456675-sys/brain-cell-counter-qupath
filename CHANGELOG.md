@@ -2,6 +2,16 @@
 
 All user-visible releases follow semantic versioning.
 
+## 2.1.1 — 2026-09-22
+
+### Fixed
+
+- Desktop and installation-folder shortcuts now target the stable Cellpose
+  `pythonw.exe` plus the installed application script directly. This avoids
+  shortcut targets being redirected into the Codex application cache.
+- The core and complete installers now create the same direct shortcut in both
+  the Desktop and application installation folder.
+
 ## 2.1.0 — 2026-09-22
 
 ### Changed
