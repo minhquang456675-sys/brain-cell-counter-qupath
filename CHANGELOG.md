@@ -2,6 +2,20 @@
 
 All user-visible releases follow semantic versioning.
 
+## 2.1.0 — 2026-09-22
+
+### Changed
+
+- Grouped every QuPath and Fiji Groovy script under `qupath_scripts/` and
+  updated both desktop interfaces, tests, documentation, and installer staging
+  to resolve the categorized paths.
+- Added a project-structure guide that distinguishes application source,
+  scientific scripts, installer source, documentation, launchers, and
+  generated or machine-specific files.
+- Kept scientific output schema 2.0 because this release changes file
+  organization only; cell counting, thresholds, region assignment, and output
+  columns are unchanged.
+
 ## 2.0.0 — 2026-09-22
 
 ### Added

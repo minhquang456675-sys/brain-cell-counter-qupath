@@ -13,10 +13,10 @@ $ErrorActionPreference = "Stop"
 $InstallerRoot = $PSScriptRoot
 $ProjectRoot = Split-Path -Parent $InstallerRoot
 $DistRoot = Join-Path $ProjectRoot "dist"
-$PackageRoot = Join-Path $DistRoot "Brain_Cell_Counter_v2.0.0_Installer_Package"
+$PackageRoot = Join-Path $DistRoot "Brain_Cell_Counter_v2.1.0_Installer_Package"
 $PayloadStage = Join-Path ([IO.Path]::GetTempPath()) "BCC-v1-payload-stage"
 $PayloadZip = Join-Path $PackageRoot "payload.zip"
-$PackageZip = Join-Path $DistRoot "Brain_Cell_Counter_v2.0.0_Installer_Package.zip"
+$PackageZip = Join-Path $DistRoot "Brain_Cell_Counter_v2.1.0_Installer_Package.zip"
 
 foreach ($path in @($PackageRoot, $PayloadStage)) {
     if (Test-Path -LiteralPath $path) {
@@ -32,15 +32,14 @@ New-Item -ItemType Directory -Path $PackageRoot, $PayloadStage -Force | Out-Null
 
 foreach ($file in @(
     "run_brain_cell_counter_v1.0.py",
-    "Brain_Cell_Counter_QuPath_Engine_v1.0.groovy",
-    "Brain_Cell_Counter_Calibration_Preview_v1.0.groovy",
-    "Brain_Cell_Counter_Calibration_Apply_v1.0.groovy",
-    "Brain_Cell_Counter_Fiji_Calibration_v1.0.groovy",
     "README.md",
     "CHANGELOG.md"
 )) {
     Copy-Item -LiteralPath (Join-Path $ProjectRoot $file) -Destination $PayloadStage
 }
+$scriptStage = Join-Path $PayloadStage "qupath_scripts"
+New-Item -ItemType Directory -Path $scriptStage -Force | Out-Null
+Copy-Item -Path (Join-Path $ProjectRoot "qupath_scripts\*.groovy") -Destination $scriptStage
 $packageStage = Join-Path $PayloadStage "brain_cell_counter"
 New-Item -ItemType Directory -Path $packageStage -Force | Out-Null
 foreach ($file in @("__init__.py", "version.py", "app_core.py", "qt_app.py", "hybrid_app.py", "threshold_optimizer.py", "calibration.py", "calibration_wizard.py", "results_preview.py")) {
@@ -70,7 +69,7 @@ foreach ($file in @(
 
 Compress-Archive -Path $PackageRoot -DestinationPath $PackageZip -CompressionLevel Optimal
 $hash = (Get-FileHash -LiteralPath $PackageZip -Algorithm SHA256).Hash.ToLowerInvariant()
-Set-Content -LiteralPath (Join-Path $DistRoot "Brain_Cell_Counter_v2.0.0_Installer_Package.sha256.txt") -Encoding ASCII -Value "$hash  Brain_Cell_Counter_v2.0.0_Installer_Package.zip"
+Set-Content -LiteralPath (Join-Path $DistRoot "Brain_Cell_Counter_v2.1.0_Installer_Package.sha256.txt") -Encoding ASCII -Value "$hash  Brain_Cell_Counter_v2.1.0_Installer_Package.zip"
 Write-Host "Built folder: $PackageRoot"
 Write-Host "Built package: $PackageZip"
 Write-Host "SHA-256: $hash"

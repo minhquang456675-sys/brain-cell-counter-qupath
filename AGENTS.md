@@ -15,6 +15,8 @@ ABBA -> DeepSlice Local -> QuPath project -> Python GUI
 ## Read only what the task needs
 
 - Start with this file and the root `README.md`.
+- Read `docs/PROJECT_STRUCTURE.md` before moving files or changing component
+  boundaries.
 - Read `docs/ARCHITECTURE.md` for component boundaries, data flow, and outputs.
 - Read `docs/USER_GUIDE.md` for GUI behavior and the analysis workflow.
 - Read `docs/SCIENTIFIC_METHOD.md` for threshold optimization, biological
@@ -29,7 +31,7 @@ ABBA -> DeepSlice Local -> QuPath project -> Python GUI
 - Python launcher: `run_brain_cell_counter_v1.0.py`
 - Python GUI and orchestration: `brain_cell_counter/hybrid_app.py`
 - Threshold algorithms and reports: `brain_cell_counter/threshold_optimizer.py`
-- QuPath analysis engine: `Brain_Cell_Counter_QuPath_Engine_v1.0.groovy`
+- QuPath analysis engine: `qupath_scripts/Brain_Cell_Counter_QuPath_Engine_v1.0.groovy`
 - Installer source: `installer/`
 - Generated packages: `dist/` and `installer/build/` (never edit directly)
 

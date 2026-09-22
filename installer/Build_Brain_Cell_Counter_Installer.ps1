@@ -16,9 +16,9 @@ $BuildRoot = Join-Path ([IO.Path]::GetTempPath()) "BCC-v1-installer-build"
 $StageRoot = Join-Path $BuildRoot "payload"
 $DistRoot = Join-Path $ProjectRoot "dist"
 $PayloadZip = Join-Path $BuildRoot "payload.zip"
-$OutputExe = Join-Path $DistRoot "Brain_Cell_Counter_v2.0.0_Setup.exe"
+$OutputExe = Join-Path $DistRoot "Brain_Cell_Counter_v2.1.0_Setup.exe"
 $TemporaryOutputExe = Join-Path ([IO.Path]::GetTempPath()) "BCC-v1-setup-build.exe"
-$SedPath = Join-Path $BuildRoot "Brain_Cell_Counter_v2.0.0_Setup.sed"
+$SedPath = Join-Path $BuildRoot "Brain_Cell_Counter_v2.1.0_Setup.sed"
 
 if (-not (Test-Path -LiteralPath (Join-Path $ProjectRoot "run_brain_cell_counter_v1.0.py"))) {
     throw "Project root was not detected correctly: $ProjectRoot"
@@ -37,14 +37,13 @@ if (Test-Path -LiteralPath $TemporaryOutputExe) {
 }
 
 Copy-Item -LiteralPath (Join-Path $ProjectRoot "run_brain_cell_counter_v1.0.py") -Destination $StageRoot
-Copy-Item -LiteralPath (Join-Path $ProjectRoot "Brain_Cell_Counter_QuPath_Engine_v1.0.groovy") -Destination $StageRoot
-Copy-Item -LiteralPath (Join-Path $ProjectRoot "Brain_Cell_Counter_Calibration_Preview_v1.0.groovy") -Destination $StageRoot
-Copy-Item -LiteralPath (Join-Path $ProjectRoot "Brain_Cell_Counter_Calibration_Apply_v1.0.groovy") -Destination $StageRoot
-Copy-Item -LiteralPath (Join-Path $ProjectRoot "Brain_Cell_Counter_Fiji_Calibration_v1.0.groovy") -Destination $StageRoot
 Copy-Item -LiteralPath (Join-Path $ProjectRoot "README.md") -Destination $StageRoot
 Copy-Item -LiteralPath (Join-Path $ProjectRoot "CHANGELOG.md") -Destination $StageRoot
 Copy-Item -LiteralPath (Join-Path $InstallerRoot "Verify_Brain_Cell_Counter_v1.0.ps1") -Destination $StageRoot
 Copy-Item -LiteralPath (Join-Path $InstallerRoot "THIRD_PARTY_NOTICES.md") -Destination $StageRoot
+$scriptStage = Join-Path $StageRoot "qupath_scripts"
+New-Item -ItemType Directory -Path $scriptStage -Force | Out-Null
+Copy-Item -Path (Join-Path $ProjectRoot "qupath_scripts\*.groovy") -Destination $scriptStage
 
 $packageStage = Join-Path $StageRoot "brain_cell_counter"
 New-Item -ItemType Directory -Path $packageStage -Force | Out-Null
@@ -85,11 +84,11 @@ AdminQuietInstCmd=%AdminQuietInstCmd%
 UserQuietInstCmd=%UserQuietInstCmd%
 SourceFiles=SourceFiles
 [Strings]
-InstallPrompt=Install Brain Cell Counter v2.0.0 and its scientific software stack?
+InstallPrompt=Install Brain Cell Counter v2.1.0 and its scientific software stack?
 DisplayLicense=
 FinishMessage=
 TargetName=$TemporaryOutputExe
-FriendlyName=Brain Cell Counter v2.0.0 Setup
+FriendlyName=Brain Cell Counter v2.1.0 Setup
 AppLaunched=cmd /c setup.cmd
 PostInstallCmd=<None>
 AdminQuietInstCmd=
@@ -117,7 +116,7 @@ Copy-Item -LiteralPath $TemporaryOutputExe -Destination $OutputExe -Force
 
 $hash = (Get-FileHash -LiteralPath $OutputExe -Algorithm SHA256).Hash.ToLowerInvariant()
 $sizeMb = [Math]::Round((Get-Item -LiteralPath $OutputExe).Length / 1MB, 2)
-Set-Content -LiteralPath (Join-Path $DistRoot "Brain_Cell_Counter_v2.0.0_Setup.sha256.txt") -Encoding ASCII -Value "$hash  Brain_Cell_Counter_v2.0.0_Setup.exe"
+Set-Content -LiteralPath (Join-Path $DistRoot "Brain_Cell_Counter_v2.1.0_Setup.sha256.txt") -Encoding ASCII -Value "$hash  Brain_Cell_Counter_v2.1.0_Setup.exe"
 Write-Host "Built: $OutputExe"
 Write-Host "Size: $sizeMb MB"
 Write-Host "SHA-256: $hash"

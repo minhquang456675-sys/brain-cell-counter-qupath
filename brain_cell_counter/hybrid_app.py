@@ -26,6 +26,7 @@ from .threshold_optimizer import calculate_global_thresholds, write_threshold_re
 from .calibration_wizard import CalibrationWizard
 from .results_preview import ResultsPreviewTab
 from .version import APP_VERSION, APP_VERSION_LABEL, OUTPUT_SCHEMA_VERSION
+from .app_core import ENGINE_FILENAME, qupath_script_path
 
 
 USER_HOME = Path.home()
@@ -1633,7 +1634,7 @@ Automatic thresholds are proposals, not biological ground truth. Always review C
     def _start_abba_import_batch(self) -> None:
         qupath = Path(self.values["qupath"].get().strip())
         project = Path(self.values["project"].get().strip())
-        engine = Path(__file__).resolve().parent.parent / "Brain_Cell_Counter_QuPath_Engine_v1.0.groovy"
+        engine = qupath_script_path(ENGINE_FILENAME)
         if not qupath.is_file() or not project.is_file() or not engine.is_file():
             messagebox.showerror("Missing input", "Check the QuPath executable, project, and analysis engine file.")
             return
@@ -1825,7 +1826,7 @@ Automatic thresholds are proposals, not biological ground truth. Always review C
 
     def _start_threshold_optimization(self) -> None:
         qupath = Path(self.values["qupath"].get().strip())
-        engine = Path(__file__).resolve().parent.parent / "Brain_Cell_Counter_QuPath_Engine_v1.0.groovy"
+        engine = qupath_script_path(ENGINE_FILENAME)
         if not qupath.is_file() or not engine.is_file():
             messagebox.showerror("Missing input", "Check the QuPath executable and analysis engine file.")
             return
@@ -2020,7 +2021,7 @@ Automatic thresholds are proposals, not biological ground truth. Always review C
         image_names = list(self.project_entries)
         qupath = Path(self.values["qupath"].get().strip())
         project = Path(self.values["project"].get().strip())
-        engine = Path(__file__).resolve().parent.parent / "Brain_Cell_Counter_QuPath_Engine_v1.0.groovy"
+        engine = qupath_script_path(ENGINE_FILENAME)
         if not image_names:
             messagebox.showerror("Validate all entries", "Load a QuPath project containing image entries first.")
             return
@@ -2151,7 +2152,7 @@ Automatic thresholds are proposals, not biological ground truth. Always review C
     def _start_batch_analysis(self, image_names: list[str]) -> None:
         qupath = Path(self.values["qupath"].get().strip())
         project = Path(self.values["project"].get().strip())
-        engine = Path(__file__).resolve().parent.parent / "Brain_Cell_Counter_QuPath_Engine_v1.0.groovy"
+        engine = qupath_script_path(ENGINE_FILENAME)
         if not qupath.is_file() or not project.is_file() or not engine.is_file():
             messagebox.showerror("Missing input", "Check the QuPath executable, project, and analysis engine file.")
             return
@@ -2430,7 +2431,7 @@ Automatic thresholds are proposals, not biological ground truth. Always review C
         qupath = Path(self.values["qupath"].get().strip())
         project = Path(self.values["project"].get().strip())
         image_name = self.values["image"].get().strip()
-        engine = Path(__file__).resolve().parent.parent / "Brain_Cell_Counter_QuPath_Engine_v1.0.groovy"
+        engine = qupath_script_path(ENGINE_FILENAME)
         if not qupath.is_file() or not project.is_file() or not image_name or not engine.is_file():
             messagebox.showerror("Missing input", "Check the QuPath executable, project, image entry and analysis engine file.")
             return

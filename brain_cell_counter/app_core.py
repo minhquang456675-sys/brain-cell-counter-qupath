@@ -19,6 +19,12 @@ from .version import APP_VERSION, OUTPUT_SCHEMA_VERSION
 
 
 ENGINE_FILENAME = "Brain_Cell_Counter_QuPath_Engine_v1.0.groovy"
+QUPATH_SCRIPTS_DIRECTORY = "qupath_scripts"
+
+
+def qupath_script_path(filename: str) -> Path:
+    """Resolve a packaged QuPath/Fiji script from its categorized folder."""
+    return Path(__file__).resolve().parent.parent / QUPATH_SCRIPTS_DIRECTORY / filename
 
 
 @dataclass(frozen=True)

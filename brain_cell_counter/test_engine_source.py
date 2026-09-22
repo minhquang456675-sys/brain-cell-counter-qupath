@@ -11,7 +11,7 @@ from brain_cell_counter.version import APP_VERSION, OUTPUT_SCHEMA_VERSION
 class EngineSourceRegressionTests(unittest.TestCase):
     def setUp(self) -> None:
         self.engine = (
-            Path(__file__).resolve().parent.parent / "Brain_Cell_Counter_QuPath_Engine_v1.0.groovy"
+            Path(__file__).resolve().parent.parent / "qupath_scripts" / "Brain_Cell_Counter_QuPath_Engine_v1.0.groovy"
         ).read_text(encoding="utf-8")
 
     def test_engine_reports_current_application_version(self) -> None:

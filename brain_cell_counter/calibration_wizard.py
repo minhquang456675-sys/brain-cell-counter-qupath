@@ -59,13 +59,13 @@ class CalibrationWizard(tk.Toplevel):
         self.running = False
         self.stop_requested = False
         self.preview_script = (
-            Path(__file__).resolve().parent.parent / "Brain_Cell_Counter_Calibration_Preview_v1.0.groovy"
+            Path(__file__).resolve().parent.parent / "qupath_scripts" / "Brain_Cell_Counter_Calibration_Preview_v1.0.groovy"
         )
         self.apply_script = (
-            Path(__file__).resolve().parent.parent / "Brain_Cell_Counter_Calibration_Apply_v1.0.groovy"
+            Path(__file__).resolve().parent.parent / "qupath_scripts" / "Brain_Cell_Counter_Calibration_Apply_v1.0.groovy"
         )
         self.fiji_script = (
-            Path(__file__).resolve().parent.parent / "Brain_Cell_Counter_Fiji_Calibration_v1.0.groovy"
+            Path(__file__).resolve().parent.parent / "qupath_scripts" / "Brain_Cell_Counter_Fiji_Calibration_v1.0.groovy"
         )
         self.output_directory = self.project_path.parent / "brain_cell_counter_calibration"
         self.qc_directory = self.output_directory / "qc"

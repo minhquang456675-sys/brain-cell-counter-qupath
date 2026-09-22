@@ -17,8 +17,12 @@ class VersionConsistencyTests(unittest.TestCase):
         )
         self.assertEqual(manifest["version"], APP_VERSION)
 
-    def test_output_schema_matches_major_minor_release(self) -> None:
-        self.assertEqual(OUTPUT_SCHEMA_VERSION, ".".join(APP_VERSION.split(".")[:2]))
+    def test_output_schema_is_compatible_and_not_ahead_of_application(self) -> None:
+        """UI-only releases may retain the preceding scientific output schema."""
+        application_major_minor = tuple(int(part) for part in APP_VERSION.split(".")[:2])
+        output_schema = tuple(int(part) for part in OUTPUT_SCHEMA_VERSION.split("."))
+        self.assertEqual(output_schema[0], application_major_minor[0])
+        self.assertLessEqual(output_schema, application_major_minor)
 
 
 if __name__ == "__main__":

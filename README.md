@@ -1,4 +1,4 @@
-# Brain Cell Counter v2.0.0
+# Brain Cell Counter v2.1.0
 
 Brain Cell Counter is a Windows workflow for object-based fluorescent
 brain-cell counting by Allen brain region. It coordinates ABBA/DeepSlice
@@ -46,6 +46,7 @@ See [Installation guide](docs/INSTALLATION.md) and
 
 ## Documentation
 
+- [Project file structure](docs/PROJECT_STRUCTURE.md)
 - [Architecture and data flow](docs/ARCHITECTURE.md)
 - [User guide](docs/USER_GUIDE.md)
 - [Scientific method and validation](docs/SCIENTIFIC_METHOD.md)
@@ -89,7 +90,7 @@ See [Scientific method and validation](docs/SCIENTIFIC_METHOD.md).
 
 ## Versioning
 
-The current application release is **v2.0.0**. Patch versions are increased
+The current application release is **v2.1.0**. Patch versions are increased
 for fixes, minor versions for backward-compatible features, and major versions
 for incompatible workflow changes. Some launcher and engine source filenames
 retain `v1.0` for compatibility with existing shortcuts; the application

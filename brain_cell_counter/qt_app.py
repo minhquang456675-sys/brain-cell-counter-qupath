@@ -49,6 +49,7 @@ from .app_core import (
     analysis_signature,
     checkpoint_path,
     qupath_command,
+    qupath_script_path,
     read_checkpoint,
     read_project,
     write_checkpoint,
@@ -762,7 +763,7 @@ Calibration, the complete threshold audit, compact result-column export, and **O
             Path(str(self.settings["qupath"])),
             self.summary.path,
             image,
-            ROOT / ENGINE_FILENAME,
+            qupath_script_path(ENGINE_FILENAME),
             arguments,
             save=self.mode in {"analyze", "apply-atlas"},
         )
