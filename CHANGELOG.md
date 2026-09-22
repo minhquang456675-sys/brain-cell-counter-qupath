@@ -2,6 +2,17 @@
 
 All user-visible releases follow semantic versioning.
 
+## 2.1.3 — 2026-09-22
+
+### Fixed
+
+- The source-tree launcher and development shortcuts now start the application
+  directly from the real repository path under `Documents`, avoiding the
+  virtualized LocalAppData view used when Codex runs as a packaged Windows app.
+- The source launcher now prefers the Cellpose environment's `pythonw.exe`,
+  falls back to the system Python GUI interpreter, and reports missing paths in
+  a visible console instead of failing silently.
+
 ## 2.1.2 — 2026-09-22
 
 ### Fixed
