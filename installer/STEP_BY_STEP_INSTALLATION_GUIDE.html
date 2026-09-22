@@ -1,0 +1,104 @@
+<!doctype html>
+<!-- Human-readable guide for the numbered Windows installer workflow. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Brain Cell Counter v2.0.0 — Installation Guide</title>
+  <style>
+    body{font-family:Segoe UI,Arial,sans-serif;max-width:980px;margin:36px auto;padding:0 24px;color:#1f2937;line-height:1.55}
+    h1,h2{color:#123b66} h1{border-bottom:4px solid #18a84a;padding-bottom:12px}
+    .box{background:#eef6ff;border-left:5px solid #2474b5;padding:14px 18px;margin:18px 0}
+    .warn{background:#fff7df;border-left-color:#d88b00}.ok{background:#eaf8ee;border-left-color:#18a84a}
+    code{background:#f1f3f5;padding:2px 5px;border-radius:4px} table{border-collapse:collapse;width:100%}
+    th,td{border:1px solid #cbd5e1;padding:9px;text-align:left}th{background:#e8eef5}
+    li{margin:6px 0} a{color:#075fa6}.step{font-size:1.15em;font-weight:700;color:#123b66}
+  </style>
+</head>
+<body>
+<h1>Brain Cell Counter v2.0.0 — Windows Installation Guide</h1>
+
+<div class="box ok"><strong>Recommended approach:</strong> install the small core application first, then use the two automated dependency scripts. Install ABBA with its official standalone package because that package already includes Fiji, DeepSlice Local, Elastix and the ABBA environments.</div>
+
+<h2>1. Requirements</h2>
+<ul>
+  <li>64-bit Windows 10 or Windows 11.</li>
+  <li>At least 20 GB free disk space.</li>
+  <li>A stable internet connection for dependency installation.</li>
+  <li>For GPU Cellpose: an NVIDIA GPU and a current NVIDIA display driver. The CUDA Toolkit is not required.</li>
+  <li>Close QuPath before installation and before Brain Cell Counter batch analysis.</li>
+</ul>
+
+<table>
+  <tr><th>Component</th><th>Version</th><th>Installation method</th></tr>
+  <tr><td>Brain Cell Counter</td><td>1.0</td><td>Core installer in this package</td></tr>
+  <tr><td>QuPath</td><td>0.7.0</td><td>Automated script</td></tr>
+  <tr><td>QuPath Cellpose extension</td><td>0.12.1</td><td>Automated script</td></tr>
+  <tr><td>QuPath ABBA / Warpy</td><td>0.5.0</td><td>Automated script</td></tr>
+  <tr><td>Miniforge</td><td>26.7.2-0</td><td>Automated script</td></tr>
+  <tr><td>Cellpose-SAM</td><td>4.2.1.1</td><td>Automated script</td></tr>
+  <tr><td>PyTorch</td><td>2.11.0, CUDA 12.8 or CPU</td><td>Automatically selected</td></tr>
+  <tr><td>ABBA standalone package</td><td>0.11.0</td><td>Official installer, manual step</td></tr>
+</table>
+
+<h2>2. Install the Brain Cell Counter core</h2>
+<p class="step">Double-click <code>01_Install_Core.cmd</code>.</p>
+<p>This copies the application to <code>%LOCALAPPDATA%\BrainCellCounter</code> and creates a desktop shortcut. It does not install or modify scientific dependencies.</p>
+
+<h2>3. Install QuPath and extensions</h2>
+<p class="step">Double-click <code>02_Install_QuPath_and_Extensions.cmd</code>.</p>
+<p>The script downloads the official QuPath 0.7.0 portable archive and installs the compatible Cellpose, ABBA and Warpy extensions. Every download is pinned and checked using SHA-256. A QuPath desktop shortcut is created.</p>
+
+<h2>4. Install Miniforge and Cellpose</h2>
+<p class="step">Double-click <code>03_Install_Miniforge_Cellpose.cmd</code>.</p>
+<p>The script installs Miniforge under <code>%USERPROFILE%\miniforge3</code>, creates the <code>cellpose</code> environment, installs Cellpose-SAM and downloads the approximately 1.2 GB <code>cpsam</code> model.</p>
+<ul>
+  <li>If <code>nvidia-smi</code> detects an NVIDIA GPU, CUDA 12.8 PyTorch wheels are installed.</li>
+  <li>If no NVIDIA driver is detected, CPU PyTorch is installed.</li>
+  <li>For an RTX 3050, install/update the driver from the <a href="https://www.nvidia.com/Download/index.aspx">official NVIDIA driver page</a> before running this step.</li>
+</ul>
+<div class="box warn">This step can download several GB and may take 20–60 minutes. If it is interrupted, run the same file again; verified cached downloads are reused.</div>
+
+<h2>5. Install ABBA, Fiji and DeepSlice Local</h2>
+<p>Do <strong>not</strong> install a separate Fiji copy for this workflow. Download the official ABBA 0.11.0 Windows installer:</p>
+<p><a href="https://github.com/BIOP/ijp-imagetoatlas/releases/download/0.11.0/ABBA-Python-0.11.0-0.11.0-Windows-x86_64.exe">ABBA-Python-0.11.0-0.11.0-Windows-x86_64.exe</a></p>
+<ol>
+  <li>Download the installer (approximately 1.9 GB).</li>
+  <li>Run it and choose <code>%LOCALAPPDATA%\ABBA-Python-0.11.0</code> as the destination.</li>
+  <li>Keep the default components selected.</li>
+  <li>Start ABBA once and allow Fiji components to finish downloading.</li>
+  <li>Confirm that ABBA opens and that DeepSlice Local and Elastix are available.</li>
+</ol>
+<p>Official SHA-256:</p>
+<p><code>97a79635d89606d5096304801584ab81f9e63036b0b571f4313ab71bbba1c9ab</code></p>
+<div class="box">The official ABBA package contains Fiji, ABBA, BrainGlobe support, DeepSlice Local, Elastix and Transformix. The first launch still requires internet access to initialize Fiji files and download the chosen atlas.</div>
+
+<h2>6. Verify the installation</h2>
+<p class="step">Double-click <code>04_Verify_Installation.cmd</code>.</p>
+<p>All rows should show <strong>PASS</strong>. The report is saved at <code>%LOCALAPPDATA%\BrainCellCounter\Installation_Report.txt</code>. For an NVIDIA machine, the Python check should contain <code>"cuda_available": true</code> and the GPU name.</p>
+
+<h2>7. First application run</h2>
+<ol>
+  <li>Open <strong>Brain Cell Counter</strong> from the Desktop. The application window should report v2.0.0.</li>
+  <li>Open <strong>Settings</strong>.</li>
+  <li>Confirm QuPath Console: <code>%LOCALAPPDATA%\QuPath-0.7.0\QuPath-0.7.0 (console).exe</code>.</li>
+  <li>Confirm Cellpose Python: <code>%USERPROFILE%\miniforge3\envs\cellpose\python.exe</code>.</li>
+  <li>Choose the ABBA/DeepSlice-exported <code>project.qpproj</code>.</li>
+  <li>If stitched-image calibration is missing or unreliable, run <strong>CALIBRATE</strong>, review every scale bar, and apply only confirmed values before ABBA.</li>
+  <li>Run <strong>PREFLIGHT</strong>, then <strong>VALIDATE</strong>.</li>
+  <li>Only after validation is ready, run threshold optimization or <strong>ANALYZE</strong>.</li>
+</ol>
+
+<h2>Troubleshooting</h2>
+<ul>
+  <li><strong>Windows SmartScreen:</strong> select More info → Run anyway only if the package came from your trusted copy.</li>
+  <li><strong>CUDA is false:</strong> update the NVIDIA driver, restart Windows, then rerun <code>03_Install_Miniforge_Cellpose.cmd</code>.</li>
+  <li><strong>GitHub download is blocked:</strong> connect to a network that permits GitHub release downloads, then rerun the same script.</li>
+  <li><strong>QuPath extension is missing:</strong> close QuPath, rerun step 3, and reopen QuPath.</li>
+  <li><strong>ABBA first launch is slow:</strong> allow it to complete the Fiji and atlas downloads without closing it.</li>
+  <li><strong>Project images are missing:</strong> use Brain Cell Counter <strong>PREFLIGHT</strong> to locate moved source images and create a backed-up project repair.</li>
+</ul>
+
+<p><small>Research-use software. Automatic registration, segmentation and threshold proposals require visual and biological validation.</small></p>
+</body>
+</html>

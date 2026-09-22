@@ -1,0 +1,20 @@
+{
+  "project": "",
+  "fiji_path": "C:\\path\\to\\Fiji\\fiji-windows-x64.exe",
+  "channel_names": {
+    "1": "NeuN",
+    "2": "c-Fos",
+    "3": "DAPI"
+  },
+  "hemisphere_mode": "Left and Right",
+  "global_thresholds": {
+    "channel1": "",
+    "channel2": "",
+    "channel3": "",
+    "locked": false
+  },
+  "cellpose_parameters": {
+    "cellprob": "-0.25",
+    "flow": "0.7"
+  }
+}

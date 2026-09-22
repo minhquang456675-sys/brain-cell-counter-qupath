@@ -1,0 +1,53 @@
+# Python caches and test artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local environments and secrets
+.venv/
+venv/
+env/
+.env
+.env.*
+
+# Local application state
+brain_cell_counter_settings.json
+*.log
+*.tmp
+.codex-log/
+
+# Generated build and release artifacts
+build/
+dist/
+installer/build/
+*.egg-info/
+
+# QuPath projects, analysis outputs, and backups
+*.qpproj
+brain_cell_counter_results/
+*.bak
+
+# Raw microscopy and whole-slide images
+*.tif
+*.tiff
+*.ome.tif
+*.ome.tiff
+*.czi
+*.vsi
+*.ndpi
+*.svs
+*.lif
+
+# Operating-system and editor files
+*.lnk
+Thumbs.db
+Desktop.ini
+.DS_Store
+.idea/
+.vscode/
+
+# Local visual QA artifacts
+/region5_atlas_preview.png
