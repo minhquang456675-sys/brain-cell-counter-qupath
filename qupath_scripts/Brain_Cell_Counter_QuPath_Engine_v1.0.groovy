@@ -1150,4 +1150,3 @@ def summary = [
 event('result', summary)
 event('progress', [percent: 99, stage: 'Saving QuPath results'])
 event('done', summary)
-
