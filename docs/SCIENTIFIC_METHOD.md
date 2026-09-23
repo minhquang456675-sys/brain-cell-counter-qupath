@@ -100,15 +100,15 @@ at least 3 consecutive stable threshold steps
 The optimizer writes:
 
 ```text
-global_threshold_optimization_v2.0.csv
-global_threshold_optimization_v2.0.json
-global_threshold_optimization_v2.0.html
+global_threshold_optimization_v2.1.csv
+global_threshold_optimization_v2.1.json
+global_threshold_optimization_v2.1.html
 ```
 
 Pair objectives also write:
 
 ```text
-channel_pair_double_positive_optimization_v2.0.csv
+channel_pair_double_positive_optimization_v2.1.csv
 ```
 
 Reports include total counts, per-section counts, percentage changes,

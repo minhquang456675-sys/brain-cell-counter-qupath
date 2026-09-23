@@ -12,7 +12,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
 
-COUNT_HINTS = ("DAPI", "Positive", "Triple")
+COUNT_HINTS = ("DAPI", "Positive", "+")
 PHYSICAL_HINTS = ("Area_mm2", "Density_per_mm2", "Pixel_Size")
 PERCENT_HINT = "Percent"
 IDENTIFIER_COLUMNS = {

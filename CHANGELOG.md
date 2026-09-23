@@ -2,6 +2,21 @@
 
 All user-visible releases follow semantic versioning.
 
+## 2.5.0 — 2026-09-23
+
+### Changed
+
+- Regional output schema 2.1 replaces the ambiguous `Triple_Positive` label
+  with the explicit channel-derived `DAPI+cFOS+NeuN` count and matching
+  density/percentage names.
+
+### Added
+
+- Regional CSVs now include a separate `cFOS+NeuN` object-based
+  double-positive count and density. With no DAPI intensity requirement it is
+  expected to equal `DAPI+cFOS+NeuN`; with the DAPI threshold enabled it may be
+  higher because the triple-positive count remains DAPI-qualified.
+
 ## 2.4.1 — 2026-09-23
 
 ### Fixed

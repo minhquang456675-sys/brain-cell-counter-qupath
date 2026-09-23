@@ -47,7 +47,7 @@ if (Test-Path -LiteralPath $CellposePython) {
 }
 
 $header = @(
-    "Brain Cell Counter v2.4.1 - Installation Report",
+    "Brain Cell Counter v2.5.0 - Installation Report",
     "Generated: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')",
     "Computer: $env:COMPUTERNAME",
     "User: $env:USERNAME",

@@ -111,7 +111,7 @@ selected hemisphere mode.
 After each successful entry, ANALYZE updates:
 
 ```text
-<QuPath project>/brain_cell_counter_results/batch_checkpoint_v2.0.json
+<QuPath project>/brain_cell_counter_results/batch_checkpoint_v2.1.json
 ```
 
 The application can skip completed entries only when the project and exact
@@ -138,8 +138,8 @@ endpoint coordinates, metadata calibration, and all internal record fields.
 For every successful entry:
 
 ```text
-<QuPath project>/brain_cell_counter_results/<image>_regional_counts_v2.0.csv
-<QuPath project>/brain_cell_counter_results/<image>_atlas_overlay_v2.0.png
+<QuPath project>/brain_cell_counter_results/<image>_regional_counts_v2.1.csv
+<QuPath project>/brain_cell_counter_results/<image>_atlas_overlay_v2.1.png
 ```
 
 The overlay is approximately 3200 pixels and contains the source fluorescence

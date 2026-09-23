@@ -285,7 +285,7 @@ class QtResultsWidget(QWidget):
         for row_index, row in enumerate(self.rows):
             for column_index, column in enumerate(columns):
                 item = QTableWidgetItem(row.get(column, ""))
-                if any(token in column for token in ("Count", "Positive", "Area", "Density", "Percent", "Pixel_Size")):
+                if any(token in column for token in ("Count", "Positive", "+", "Area", "Density", "Percent", "Pixel_Size")):
                     item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
                 self.table.setItem(row_index, column_index, item)
         for column_index, column in enumerate(columns):

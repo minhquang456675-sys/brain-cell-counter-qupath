@@ -23,6 +23,13 @@ class EngineSourceRegressionTests(unittest.TestCase):
         self.assertIn(f"_atlas_overlay_v{OUTPUT_SCHEMA_VERSION}.png", self.engine)
         self.assertNotIn("_cell_overlay_points_v", self.engine)
 
+    def test_engine_exports_named_marker_coexpression_columns(self) -> None:
+        """Keep two-marker and DAPI-qualified co-expression distinct."""
+        self.assertIn('String doublePositiveHeader = "${channel1Header}+${channel2Header}"', self.engine)
+        self.assertIn('String triplePositiveHeader = "${channel3Header}+${channel1Header}+${channel2Header}"', self.engine)
+        self.assertIn("row.doublePositive", self.engine)
+        self.assertNotIn("Triple_Positive,", self.engine)
+
 
 if __name__ == "__main__":
     unittest.main()

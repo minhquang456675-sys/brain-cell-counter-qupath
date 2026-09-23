@@ -69,18 +69,18 @@ ANALYZE, IMPORT ABBA, and calibration so the desktop viewer cannot compete with
 a headless process for the same project.
 
 QuPath displays the saved full-resolution detections and provides its standard
-overlay and classification visibility controls. Channel 1-positive objects are
-the Channel 1-only and triple-positive classes; Channel 2-positive objects are
-the Channel 2-only and triple-positive classes; DAPI-positive objects are all
-four valid DAPI classes. Close the QuPath desktop window before returning to an
-operation that writes the project.
+overlay and classification visibility controls. Regional schema 2.1 reports
+`cFOS+NeuN` for marker double-positive objects and `DAPI+cFOS+NeuN` for the
+DAPI-qualified triple-positive subset. When the optional DAPI intensity
+threshold is disabled, these values are expected to be equal. Close the QuPath
+desktop window before returning to an operation that writes the project.
 
 When valid pixel calibration is available, new analyses append:
 
 - pixel width and height in micrometres,
 - Allen leaf-region area in square millimetres,
-- valid-object, Channel 1, Channel 2, and double-positive densities per square
-  millimetre,
+- valid-object, Channel 1, Channel 2, `cFOS+NeuN`, and
+  `DAPI+cFOS+NeuN` densities per square millimetre,
 - positive fractions relative to the valid Channel 3 object population and
   double-positive fractions relative to each positive marker population.
 

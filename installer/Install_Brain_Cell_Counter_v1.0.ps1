@@ -16,7 +16,7 @@ $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-$ProductName = "Brain Cell Counter v2.4.1"
+$ProductName = "Brain Cell Counter v2.5.0"
 $InstallRoot = Join-Path $env:LOCALAPPDATA "BrainCellCounter"
 $CacheRoot = Join-Path $InstallRoot "installer-cache"
 $MiniforgeRoot = Join-Path $env:USERPROFILE "miniforge3"
@@ -25,7 +25,7 @@ $QuPathRoot = Join-Path $env:LOCALAPPDATA "QuPath-0.7.0"
 $QuPathConsole = Join-Path $QuPathRoot "QuPath-0.7.0 (console).exe"
 $AbbaRoot = Join-Path $env:LOCALAPPDATA "ABBA-Python-0.11.0"
 $PayloadArchive = Join-Path $PSScriptRoot "payload.zip"
-$LogPath = Join-Path $env:TEMP "Brain_Cell_Counter_v2.4.1_install.log"
+$LogPath = Join-Path $env:TEMP "Brain_Cell_Counter_v2.5.0_install.log"
 . (Join-Path $PSScriptRoot "Merge_QuPath_Extension_Registry.ps1")
 $script:StepNumber = 0
 $script:TotalSteps = 9
@@ -325,7 +325,7 @@ try {
     $launcherLines = @(
         "@echo off",
         "cd /d `"$InstallRoot`"",
-        "start `"Brain Cell Counter v2.4.1`" `"$($CellposePython.Replace('python.exe', 'pythonw.exe'))`" `"$InstallRoot\run_brain_cell_counter_v1.0.py`""
+        "start `"Brain Cell Counter v2.5.0`" `"$($CellposePython.Replace('python.exe', 'pythonw.exe'))`" `"$InstallRoot\run_brain_cell_counter_v1.0.py`""
     )
     Set-Content -LiteralPath $launcherPath -Value $launcherLines -Encoding ASCII
     $verifyLauncher = Join-Path $InstallRoot "Verify_Installation.cmd"
@@ -351,7 +351,7 @@ try {
 
     Write-Step "Installation complete"
     Write-InstallLog "$ProductName was installed successfully." Green
-    Write-InstallLog "Desktop shortcut: Brain Cell Counter (v2.4.1)" Green
+    Write-InstallLog "Desktop shortcut: Brain Cell Counter (v2.5.0)" Green
     Write-InstallLog "Installation report: $InstallRoot\Installation_Report.txt" Green
     Write-Host ""
     Write-Host "IMPORTANT:" -ForegroundColor Yellow

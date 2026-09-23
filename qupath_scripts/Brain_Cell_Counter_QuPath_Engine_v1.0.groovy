@@ -1,6 +1,6 @@
-// Brain Cell Counter v2.4.1 - headless QuPath analysis engine
+// Brain Cell Counter v2.5.0 - headless QuPath analysis engine
 //
-// This script is launched by the Python v2.0 GUI. It expects ABBA atlas
+// This script is launched by the Python v2 GUI. It expects ABBA atlas
 // registration files to have already been exported into the QuPath entry.
 // Atlas annotations are imported automatically when the ABBA ROI set and
 // transform exist but the QuPath object hierarchy has not been loaded yet.
@@ -310,7 +310,7 @@ boolean atlasReady = namedAtlasRoot != null && !leafRegions.isEmpty() && ontolog
         ontologyMatchedLeafIds > 0
 
 def validation = [
-        version             : '2.4.1',
+        version             : '2.5.0',
         image               : imageName,
         channels            : channelCount,
         annotations         : annotations.size(),
@@ -500,7 +500,7 @@ if (mode == 'cellpose-calibrate') {
     }
 
     def calibration = [
-            version: '2.4.1',
+            version: '2.5.0',
             mode: 'cellpose-calibrate',
             image: imageName,
             roiCount: cropDefinitions.size(),
@@ -671,7 +671,7 @@ if (mode == 'threshold-profile') {
         event('progress', [percent: 96, stage: "Calculating ${pairKeys.join(' + ')} double-positive threshold grid"])
 
     def profile = [
-            version             : '2.4.1',
+            version             : '2.5.0',
             mode                : 'threshold-profile',
             image               : imageName,
             detections          : profileDetections.size(),
@@ -801,18 +801,20 @@ if (!missingMeasurements.isEmpty())
 // Classification
 // -----------------------------------------------------------------------------
 
-def counts = [total: detections.size(), dapi: 0, neun: 0, cfos: 0, triple: 0, other: 0]
+def counts = [total: detections.size(), dapi: 0, neun: 0, cfos: 0, doublePositive: 0, triple: 0, other: 0]
 event('progress', [percent: 78, stage: "Classifying ${detections.size()} detections"])
 detections.each { detection ->
     def measurements = detection.getMeasurementList()
     double neun = measurements.get(neunMeasurement)
     double cfos = measurements.get(cfosMeasurement)
     double dapi = requireDapiThreshold ? measurements.get(dapiMeasurement) : Double.NaN
-    boolean finite = Double.isFinite(neun) && Double.isFinite(cfos) &&
-            (!requireDapiThreshold || Double.isFinite(dapi))
-    boolean isDapi = finite && (!requireDapiThreshold || dapi >= dapiThreshold)
-    boolean isNeuN = finite && neun >= neunThreshold
-    boolean isCFos = finite && cfos >= cfosThreshold
+    boolean markersFinite = Double.isFinite(neun) && Double.isFinite(cfos)
+    boolean dapiFinite = !requireDapiThreshold || Double.isFinite(dapi)
+    boolean isDapi = markersFinite && dapiFinite && (!requireDapiThreshold || dapi >= dapiThreshold)
+    boolean isNeuN = markersFinite && neun >= neunThreshold
+    boolean isCFos = markersFinite && cfos >= cfosThreshold
+    if (isNeuN && isCFos)
+        counts.doublePositive++
 
     String pathClass
     if (!isDapi) {
@@ -882,6 +884,7 @@ def ensureRegionRow = { String regionId, String hemisphere ->
                 dapi: 0,
                 neun: 0,
                 cfos: 0,
+                doublePositive: 0,
                 triple: 0
         ]
     }
@@ -939,9 +942,15 @@ detections.eachWithIndex { detection, detectionIndex ->
     // hemisphere. In do-not-split mode this also combines both sides.
     def row = ensureRegionRow(regionId, hemisphere)
     String cellClass = detection.getPathClass()?.toString()
+    def measurements = detection.getMeasurementList()
+    double regionNeuN = measurements.get(neunMeasurement)
+    double regionCFos = measurements.get(cfosMeasurement)
+    boolean isDoublePositive = Double.isFinite(regionNeuN) && Double.isFinite(regionCFos) &&
+            regionNeuN >= neunThreshold && regionCFos >= cfosThreshold
     if (cellClass != CLASS_OTHER) row.dapi++
     if (cellClass == CLASS_TRIPLE || cellClass == CLASS_NEUN_ONLY) row.neun++
     if (cellClass == CLASS_TRIPLE || cellClass == CLASS_CFOS_ONLY) row.cfos++
+    if (isDoublePositive) row.doublePositive++
     if (cellClass == CLASS_TRIPLE) row.triple++
 }
 
@@ -975,28 +984,31 @@ def outputDirectory = project.getPath().getParent().resolve('brain_cell_counter_
 event('progress', [percent: 94, stage: 'Writing regional CSV'])
 Files.createDirectories(outputDirectory)
 String safeImageName = imageName.replaceAll('[^A-Za-z0-9._-]+', '_')
-def outputFile = outputDirectory.resolve("${safeImageName}_regional_counts_v2.0.csv").toFile()
+def outputFile = outputDirectory.resolve("${safeImageName}_regional_counts_v2.1.csv").toFile()
 outputFile.withWriter('UTF-8') { writer ->
     writer.write('\uFEFF')
     String channel1Header = csvHeaderName(channel1Name)
     String channel2Header = csvHeaderName(channel2Name)
     String channel3Header = csvHeaderName(channel3Name)
-    writer.writeLine("Image,Region_ID,Acronym,Region_Name,Major_Group,Hierarchy_Level,Hemisphere,${channel3Header},${channel1Header}_Positive,${channel2Header}_Positive,Triple_Positive,Activated_${channel1Header}_Percent," +
-            "Pixel_Size_X_um,Pixel_Size_Y_um,Region_Area_mm2,${channel3Header}_Density_per_mm2,${channel1Header}_Positive_Density_per_mm2,${channel2Header}_Positive_Density_per_mm2,Triple_Positive_Density_per_mm2," +
-            "${channel1Header}_Positive_Percent_of_${channel3Header},${channel2Header}_Positive_Percent_of_${channel3Header},Triple_Positive_Percent_of_${channel1Header},Triple_Positive_Percent_of_${channel2Header}")
+    String doublePositiveHeader = "${channel1Header}+${channel2Header}"
+    String triplePositiveHeader = "${channel3Header}+${channel1Header}+${channel2Header}"
+    writer.writeLine("Image,Region_ID,Acronym,Region_Name,Major_Group,Hierarchy_Level,Hemisphere,${channel3Header},${channel1Header}_Positive,${channel2Header}_Positive,${doublePositiveHeader},${triplePositiveHeader},Activated_${channel1Header}_Percent," +
+            "Pixel_Size_X_um,Pixel_Size_Y_um,Region_Area_mm2,${channel3Header}_Density_per_mm2,${channel1Header}_Positive_Density_per_mm2,${channel2Header}_Positive_Density_per_mm2,${doublePositiveHeader}_Density_per_mm2,${triplePositiveHeader}_Density_per_mm2," +
+            "${channel1Header}_Positive_Percent_of_${channel3Header},${channel2Header}_Positive_Percent_of_${channel3Header},${triplePositiveHeader}_Percent_of_${channel1Header},${triplePositiveHeader}_Percent_of_${channel2Header}")
     rows.values().sort { a, b ->
         (a.acronym <=> b.acronym) ?: (a.hemisphere <=> b.hemisphere)
     }.each { row ->
         String percent = formatMetric(percentage(row.triple as int, row.neun as int), 4)
         writer.writeLine([
                 imageName, row.regionId, row.acronym, row.regionName, row.majorGroup, row.hierarchyLevel,
-                row.hemisphere, row.dapi, row.neun, row.cfos, row.triple, percent,
+                row.hemisphere, row.dapi, row.neun, row.cfos, row.doublePositive, row.triple, percent,
                 physicalCalibrationValid ? formatMetric(pixelWidthMicrons, 6) : '',
                 physicalCalibrationValid ? formatMetric(pixelHeightMicrons, 6) : '',
                 formatMetric(row.regionAreaMm2, 6),
                 formatMetric(densityPerMm2(row.dapi as int, row.regionAreaMm2), 4),
                 formatMetric(densityPerMm2(row.neun as int, row.regionAreaMm2), 4),
                 formatMetric(densityPerMm2(row.cfos as int, row.regionAreaMm2), 4),
+                formatMetric(densityPerMm2(row.doublePositive as int, row.regionAreaMm2), 4),
                 formatMetric(densityPerMm2(row.triple as int, row.regionAreaMm2), 4),
                 formatMetric(percentage(row.neun as int, row.dapi as int), 4),
                 formatMetric(percentage(row.cfos as int, row.dapi as int), 4),
@@ -1121,13 +1133,13 @@ try {
     graphics.dispose()
 }
 
-def atlasOutputFile = outputDirectory.resolve("${safeImageName}_atlas_overlay_v2.0.png").toFile()
+def atlasOutputFile = outputDirectory.resolve("${safeImageName}_atlas_overlay_v2.1.png").toFile()
 if (!ImageIO.write(atlasImage, 'PNG', atlasOutputFile))
     fail('No PNG image writer is available for the atlas overlay.')
 event('progress', [percent: 98, stage: 'Atlas overlay PNG complete'])
 
 def summary = [
-        version: '2.4.1',
+        version: '2.5.0',
         image: imageName,
         detectionSource: reused ? 'reused' : 'cellpose',
         counts: counts,

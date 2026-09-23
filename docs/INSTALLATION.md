@@ -11,7 +11,7 @@ The separate CUDA Toolkit is not required by the installer.
 
 ## Install on another computer
 
-Copy `dist/Brain_Cell_Counter_v2.4.1_Installer_Package.zip` to the target
+Copy `dist/Brain_Cell_Counter_v2.5.0_Installer_Package.zip` to the target
 computer, extract it, and open `STEP_BY_STEP_INSTALLATION_GUIDE.html`.
 
 Run the numbered steps in order:

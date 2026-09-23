@@ -1,4 +1,4 @@
-# Brain Cell Counter v2.4.1
+# Brain Cell Counter v2.5.0
 
 Brain Cell Counter is a Windows workflow for object-based fluorescent
 brain-cell counting by Allen brain region. It coordinates ABBA/DeepSlice
@@ -60,14 +60,14 @@ See [Installation guide](docs/INSTALLATION.md) and
 Each successfully analyzed image produces:
 
 ```text
-<QuPath project>/brain_cell_counter_results/<image>_regional_counts_v2.0.csv
-<QuPath project>/brain_cell_counter_results/<image>_atlas_overlay_v2.0.png
+<QuPath project>/brain_cell_counter_results/<image>_regional_counts_v2.1.csv
+<QuPath project>/brain_cell_counter_results/<image>_atlas_overlay_v2.1.png
 ```
 
 Batch progress is recorded in:
 
 ```text
-<QuPath project>/brain_cell_counter_results/batch_checkpoint_v2.0.json
+<QuPath project>/brain_cell_counter_results/batch_checkpoint_v2.1.json
 ```
 
 Human-reviewed calibration records and QC previews are written to:
@@ -92,7 +92,7 @@ See [Scientific method and validation](docs/SCIENTIFIC_METHOD.md).
 
 ## Versioning
 
-The current application release is **v2.4.1**. Patch versions are increased
+The current application release is **v2.5.0**. Patch versions are increased
 for fixes, minor versions for backward-compatible features, and major versions
 for incompatible workflow changes. Some launcher and engine source filenames
 retain `v1.0` for compatibility with existing shortcuts; the application

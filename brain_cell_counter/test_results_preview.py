@@ -7,6 +7,7 @@ import unittest
 from pathlib import Path
 
 from brain_cell_counter.results_preview import (
+    COUNT_HINTS,
     atlas_overlay_for_result,
     discover_regional_csvs,
     export_selected_columns,
@@ -16,6 +17,9 @@ from brain_cell_counter.results_preview import (
 
 
 class ResultsPreviewTests(unittest.TestCase):
+    def test_count_presets_include_named_coexpression_columns(self) -> None:
+        self.assertTrue(any(hint in "cFOS+NeuN" for hint in COUNT_HINTS))
+
     def test_discovers_only_regional_csvs_newest_first(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             root = Path(temporary_directory)
