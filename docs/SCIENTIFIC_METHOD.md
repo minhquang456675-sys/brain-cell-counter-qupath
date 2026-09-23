@@ -100,15 +100,15 @@ at least 3 consecutive stable threshold steps
 The optimizer writes:
 
 ```text
-global_threshold_optimization_v2.1.csv
-global_threshold_optimization_v2.1.json
-global_threshold_optimization_v2.1.html
+global_threshold_optimization_v2.2.csv
+global_threshold_optimization_v2.2.json
+global_threshold_optimization_v2.2.html
 ```
 
 Pair objectives also write:
 
 ```text
-channel_pair_double_positive_optimization_v2.1.csv
+channel_pair_double_positive_optimization_v2.2.csv
 ```
 
 Reports include total counts, per-section counts, percentage changes,
@@ -128,6 +128,12 @@ The tested project validated with:
 Cellpose-SAM 4.2.1.1 was smoke-tested through the headless QuPath engine. These
 figures document one tested dataset and do not guarantee correctness for a new
 dataset.
+
+The application exposes both `cpsam` and `cpsam_v2`. Changing the model changes
+the segmentation population and therefore requires representative-ROI mask
+review before a batch. Existing detections are never claimed to have been
+created by a newly selected model. Intensity classification remains based on
+measurements from the original image, not restored or synthesized pixels.
 
 ## GPU validation baseline
 

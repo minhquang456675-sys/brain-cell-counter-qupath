@@ -62,7 +62,7 @@ try {
     Invoke-Checked $CellposePython @("-m", "pip", "install", "torch==2.11.0", "torchvision==0.26.0", "--index-url", $torchIndex) "Installing PyTorch"
     Invoke-Checked $CellposePython @("-m", "pip", "install", "cellpose==4.2.1.1", "scikit-image==0.25.2", "pillow==10.3.0", "PySide6==6.11.2") "Installing Cellpose-SAM, calibration support, and the Qt interface"
     if (-not $SkipModelDownload) {
-        Invoke-Checked $CellposePython @("-c", "from cellpose import models; models.CellposeModel(gpu=False, pretrained_model='cpsam'); print('cpsam model ready')") "Downloading the cpsam model"
+        Invoke-Checked $CellposePython @("-c", "from cellpose import models; models.CellposeModel(gpu=False, pretrained_model='cpsam_v2'); print('cpsam_v2 model ready')") "Downloading the cpsam_v2 model"
     }
     Invoke-Checked $CellposePython @("-c", "import torch,cellpose,skimage,tkinter,PIL,PySide6; print('torch=',torch.__version__); print('CUDA=',torch.cuda.is_available()); print('cellpose=',getattr(cellpose,'version',getattr(cellpose,'__version__','unknown'))); print('pillow=',PIL.__version__); print('PySide6=',PySide6.__version__)") "Verifying Cellpose, calibration support, and the Qt interface"
     Write-Host "Miniforge and Cellpose were installed successfully." -ForegroundColor Green

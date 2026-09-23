@@ -1,6 +1,6 @@
 {
   "product": "Brain Cell Counter",
-  "version": "2.5.1",
+  "version": "2.6.0",
   "platform": "Windows x86-64",
   "build_timestamp": null,
   "components": {
@@ -12,7 +12,7 @@
     "cellpose": "4.2.1.1",
     "scikit_image": "0.25.2",
     "pillow": "10.3.0",
-    "cellpose_model": "cpsam",
+    "cellpose_model": "cpsam_v2",
     "qupath": "0.7.0",
     "qupath_cellpose_extension": "0.12.1",
     "qupath_abba_extension": "0.5.0",

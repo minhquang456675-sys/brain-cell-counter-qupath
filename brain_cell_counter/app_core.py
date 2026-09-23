@@ -18,6 +18,9 @@ from urllib.parse import unquote, urlparse
 from .version import APP_VERSION, OUTPUT_SCHEMA_VERSION
 
 
+SUPPORTED_CELLPOSE_MODELS = ("cpsam", "cpsam_v2")
+
+
 ENGINE_FILENAME = "Brain_Cell_Counter_QuPath_Engine_v1.0.groovy"
 QUPATH_SCRIPTS_DIRECTORY = "qupath_scripts"
 
@@ -128,6 +131,12 @@ def analysis_arguments(settings: dict[str, object], mode: str) -> list[str]:
     cellpose_python = Path(str(settings["cellpose_python"]).strip())
     if not cellpose_python.is_file():
         raise ValueError("Choose the existing python.exe from the Cellpose environment.")
+    cellpose_model = str(settings.get("cellpose_model", "cpsam")).strip()
+    if cellpose_model not in SUPPORTED_CELLPOSE_MODELS:
+        raise ValueError(
+            f"Unsupported Cellpose model '{cellpose_model}'. Choose one of: "
+            + ", ".join(SUPPORTED_CELLPOSE_MODELS)
+        )
     hemisphere = str(settings.get("hemisphere_mode", "Left and Right"))
     values: dict[str, object] = {
         "mode": mode,
@@ -140,6 +149,7 @@ def analysis_arguments(settings: dict[str, object], mode: str) -> list[str]:
         "requireDapiThreshold": str(bool(settings.get("require_channel_3", False))).lower(),
         "cellprobThreshold": float(settings.get("cellprob", -0.5)),
         "flowThreshold": float(settings.get("flow", 0.4)),
+        "cellposeModel": cellpose_model,
         "reuseDetections": str(bool(settings.get("reuse_detections", True))).lower(),
         "cellposePythonPath": str(cellpose_python),
         "channel1Name": names[0],

@@ -111,7 +111,7 @@ selected hemisphere mode.
 After each successful entry, ANALYZE updates:
 
 ```text
-<QuPath project>/brain_cell_counter_results/batch_checkpoint_v2.1.json
+<QuPath project>/brain_cell_counter_results/batch_checkpoint_v2.2.json
 ```
 
 The application can skip completed entries only when the project and exact
@@ -138,8 +138,8 @@ endpoint coordinates, metadata calibration, and all internal record fields.
 For every successful entry:
 
 ```text
-<QuPath project>/brain_cell_counter_results/<image>_regional_counts_v2.1.csv
-<QuPath project>/brain_cell_counter_results/<image>_atlas_overlay_v2.1.png
+<QuPath project>/brain_cell_counter_results/<image>_regional_counts_v2.2.csv
+<QuPath project>/brain_cell_counter_results/<image>_atlas_overlay_v2.2.png
 ```
 
 The overlay is approximately 3200 pixels and contains the source fluorescence
@@ -166,3 +166,8 @@ calibration is unavailable; the application does not assume 1 µm/pixel.
 The master regional CSV remains complete and versioned. Results Preview can
 write an additional `_selected.csv` containing only the columns chosen by the
 user. Compact export reads every source row and never rewrites the master file.
+
+The selected Cellpose model is part of the analysis arguments and checkpoint
+signature. New detections record `cpsam` or `cpsam_v2` in output schema 2.2.
+Legacy detections that are reused are labelled as an unknown model because the
+older QuPath entries did not store model provenance.

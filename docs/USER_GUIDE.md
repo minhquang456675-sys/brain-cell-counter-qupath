@@ -183,6 +183,18 @@ dataset-wide threshold.
 
 ## Cellpose parameter suggestion
 
+The Analysis page includes a **Cellpose model** selector:
+
+- `cpsam` is the previously validated baseline.
+- `cpsam_v2` is the newer low-contrast-corrected model and must be reviewed on
+  representative ROIs before it is used for a complete batch.
+
+The selected model is saved in local settings, included in the checkpoint
+signature, and written to output schema 2.2. Selecting a new model does not
+retroactively change existing QuPath detections. Reused legacy detections are
+reported as having an unknown model; remove them deliberately before a real
+model comparison.
+
 **AUTO SUGGEST CELLPOSE** performs a non-saving calibration on the selected
 image. It tests five Cellprob values around the current value and three Flow
 values around the current value, for 15 combinations on three representative

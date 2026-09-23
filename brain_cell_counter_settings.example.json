@@ -14,6 +14,7 @@
     "locked": false
   },
   "cellpose_parameters": {
+    "model": "cpsam",
     "cellprob": "-0.25",
     "flow": "0.7"
   }

@@ -15,6 +15,7 @@ $CellposePython = Join-Path $env:USERPROFILE "miniforge3\envs\cellpose\python.ex
 $QuPathConsole = Join-Path $env:LOCALAPPDATA "QuPath-0.7.0\QuPath-0.7.0 (console).exe"
 $ExtensionRoot = Join-Path $env:USERPROFILE "QuPath\v0.7\extensions"
 $AbbaRoot = Join-Path $env:LOCALAPPDATA "ABBA-Python-0.11.0"
+$CellposeModel = Join-Path $env:USERPROFILE ".cellpose\models\cpsam_v2"
 $ReportPath = Join-Path $InstallRoot "Installation_Report.txt"
 $results = New-Object System.Collections.Generic.List[string]
 $failed = $false
@@ -28,6 +29,7 @@ function Add-Check {
 
 Add-Check "Brain Cell Counter files" (Test-Path -LiteralPath (Join-Path $InstallRoot "run_brain_cell_counter_v1.0.py")) $InstallRoot
 Add-Check "Miniforge Cellpose Python" (Test-Path -LiteralPath $CellposePython) $CellposePython
+Add-Check "Cellpose-SAM v2 model" (Test-Path -LiteralPath $CellposeModel) $CellposeModel
 Add-Check "QuPath 0.7.0" (Test-Path -LiteralPath $QuPathConsole) $QuPathConsole
 Add-Check "QuPath Cellpose extension" ($null -ne (Get-ChildItem -LiteralPath $ExtensionRoot -Recurse -File -Filter "qupath-extension-cellpose-0.12.1.jar" -ErrorAction SilentlyContinue | Select-Object -First 1)) "v0.12.1"
 Add-Check "QuPath ABBA extension" ($null -ne (Get-ChildItem -LiteralPath $ExtensionRoot -Recurse -File -Filter "qupath-extension-abba-0.5.0.jar" -ErrorAction SilentlyContinue | Select-Object -First 1)) "v0.5.0"
@@ -47,7 +49,7 @@ if (Test-Path -LiteralPath $CellposePython) {
 }
 
 $header = @(
-    "Brain Cell Counter v2.5.1 - Installation Report",
+    "Brain Cell Counter v2.6.0 - Installation Report",
     "Generated: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')",
     "Computer: $env:COMPUTERNAME",
     "User: $env:USERNAME",

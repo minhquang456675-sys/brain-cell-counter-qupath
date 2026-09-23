@@ -53,6 +53,7 @@ class AppCoreTests(unittest.TestCase):
                 "channel_3_threshold": "35",
                 "cellprob": "-0.5",
                 "flow": "0.4",
+                "cellpose_model": "cpsam_v2",
                 "reuse_detections": True,
                 "hemisphere_mode": "Left and Right",
             }
@@ -63,6 +64,24 @@ class AppCoreTests(unittest.TestCase):
             self.assertIn("neunThreshold=45.0", arguments)
             self.assertIn("hemisphereMode=left-right", arguments)
             self.assertIn("reuseDetections=true", arguments)
+            self.assertIn("cellposeModel=cpsam_v2", arguments)
+
+    def test_arguments_reject_unknown_cellpose_model(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            python = Path(directory) / "python.exe"
+            python.write_bytes(b"")
+            settings = {
+                "cellpose_python": str(python),
+                "channel_1_name": "Channel 1",
+                "channel_2_name": "Channel 2",
+                "channel_3_name": "Channel 3",
+                "channel_1_threshold": "50",
+                "channel_2_threshold": "50",
+                "channel_3_threshold": "50",
+                "cellpose_model": "unknown",
+            }
+            with self.assertRaisesRegex(ValueError, "Unsupported Cellpose model"):
+                analysis_arguments(settings, "analyze")
 
     def test_qupath_command_places_save_before_engine(self) -> None:
         command = qupath_command(

@@ -2,6 +2,21 @@
 
 All user-visible releases follow semantic versioning.
 
+## 2.6.0 — 2026-09-23
+
+### Added
+
+- Added a saved Cellpose model selector for the validated `cpsam` baseline and
+  the newer `cpsam_v2` model in both the Qt and recovery interfaces.
+- Validation, parameter suggestion, smoke testing, analysis logs, result
+  summaries, and regional CSVs now record the selected segmentation model.
+
+### Changed
+
+- Regional output schema 2.2 adds `Cellpose_Model` for reproducibility. Reused
+  legacy detections are explicitly labelled as having an unknown model rather
+  than being attributed to the current selection.
+
 ## 2.5.1 — 2026-09-23
 
 ### Fixed

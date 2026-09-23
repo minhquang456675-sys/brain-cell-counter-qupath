@@ -162,6 +162,7 @@ class HybridApp(tk.Tk):
             "require_dapi": tk.BooleanVar(value=False),
             "cellprob": tk.StringVar(value="-0.5"),
             "flow": tk.StringVar(value="0.4"),
+            "cellpose_model": tk.StringVar(value="cpsam"),
             "reuse": tk.BooleanVar(value=True),
             "channel_1_name": tk.StringVar(value="NeuN"),
             "channel_2_name": tk.StringVar(value="c-Fos"),
@@ -250,19 +251,30 @@ class HybridApp(tk.Tk):
         frame.columnconfigure(1, weight=1)
         self._help_label(
             frame,
+            "Cellpose model",
+            "cpsam is the validated baseline. cpsam_v2 should be tested on representative ROIs before batch use.",
+        ).grid(row=2, column=0, sticky="w", padx=(0, 12), pady=6)
+        ttk.Combobox(
+            frame,
+            textvariable=self.values["cellpose_model"],
+            values=("cpsam", "cpsam_v2"),
+            state="readonly",
+        ).grid(row=2, column=1, sticky="ew", pady=6)
+        self._help_label(
+            frame,
             "Cellprob threshold",
             "Lower values usually create more masks; higher values are more selective.",
-        ).grid(row=2, column=0, sticky="w", padx=(0, 12), pady=6)
+        ).grid(row=3, column=0, sticky="w", padx=(0, 12), pady=6)
         ttk.Entry(frame, textvariable=self.values["cellprob"], width=18).grid(
-            row=2, column=1, sticky="ew", pady=6
+            row=3, column=1, sticky="ew", pady=6
         )
         self._help_label(
             frame,
             "Flow threshold",
             "Lower values reject more questionable masks; higher values accept more masks.",
-        ).grid(row=3, column=0, sticky="w", padx=(0, 12), pady=6)
+        ).grid(row=4, column=0, sticky="w", padx=(0, 12), pady=6)
         ttk.Entry(frame, textvariable=self.values["flow"], width=18).grid(
-            row=3, column=1, sticky="ew", pady=6
+            row=4, column=1, sticky="ew", pady=6
         )
         ttk.Label(
             frame,
@@ -270,9 +282,9 @@ class HybridApp(tk.Tk):
             foreground="#9a5700",
             wraplength=560,
             justify="left",
-        ).grid(row=4, column=0, columnspan=2, sticky="w", pady=(14, 8))
+        ).grid(row=5, column=0, columnspan=2, sticky="w", pady=(14, 8))
         ttk.Button(frame, text="Done", command=close_window).grid(
-            row=5, column=0, columnspan=2, sticky="e", pady=(8, 0)
+            row=6, column=0, columnspan=2, sticky="e", pady=(8, 0)
         )
 
     def _show_advanced_threshold_window(self) -> None:
@@ -1378,6 +1390,8 @@ Automatic thresholds are proposals, not biological ground truth. Always review C
                 self.values["cellprob"].set(str(saved_cellpose["cellprob"]))
             if saved_cellpose.get("flow") is not None:
                 self.values["flow"].set(str(saved_cellpose["flow"]))
+            if saved_cellpose.get("model") in {"cpsam", "cpsam_v2"}:
+                self.values["cellpose_model"].set(str(saved_cellpose["model"]))
             ui_settings = data.get("ui_settings", {})
             ui_setting_map = {
                 "font_size": "ui_font_size",
@@ -1471,6 +1485,7 @@ Automatic thresholds are proposals, not biological ground truth. Always review C
                             "locked": bool(self.values["threshold_locked"].get()),
                         },
                         "cellpose_parameters": {
+                            "model": self.values["cellpose_model"].get(),
                             "cellprob": self.values["cellprob"].get(),
                             "flow": self.values["flow"].get(),
                         },
@@ -1704,6 +1719,7 @@ Automatic thresholds are proposals, not biological ground truth. Always review C
             "requireDapiThreshold": str(bool(self.values["require_dapi"].get())).lower(),
             "cellprobThreshold": float(self.values["cellprob"].get()),
             "flowThreshold": float(self.values["flow"].get()),
+            "cellposeModel": self.values["cellpose_model"].get(),
             "reuseDetections": str(bool(self.values["reuse"].get())).lower(),
             "cellposePythonPath": self.values["cellpose_python"].get().strip(),
             "channel1Name": channel_names[0],

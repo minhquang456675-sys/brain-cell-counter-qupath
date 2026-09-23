@@ -16,7 +16,7 @@ $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-$ProductName = "Brain Cell Counter v2.5.1"
+$ProductName = "Brain Cell Counter v2.6.0"
 $InstallRoot = Join-Path $env:LOCALAPPDATA "BrainCellCounter"
 $CacheRoot = Join-Path $InstallRoot "installer-cache"
 $MiniforgeRoot = Join-Path $env:USERPROFILE "miniforge3"
@@ -25,7 +25,7 @@ $QuPathRoot = Join-Path $env:LOCALAPPDATA "QuPath-0.7.0"
 $QuPathConsole = Join-Path $QuPathRoot "QuPath-0.7.0 (console).exe"
 $AbbaRoot = Join-Path $env:LOCALAPPDATA "ABBA-Python-0.11.0"
 $PayloadArchive = Join-Path $PSScriptRoot "payload.zip"
-$LogPath = Join-Path $env:TEMP "Brain_Cell_Counter_v2.5.1_install.log"
+$LogPath = Join-Path $env:TEMP "Brain_Cell_Counter_v2.6.0_install.log"
 . (Join-Path $PSScriptRoot "Merge_QuPath_Extension_Registry.ps1")
 $script:StepNumber = 0
 $script:TotalSteps = 9
@@ -169,7 +169,7 @@ function Write-InitialSettings {
         channel_names = [ordered]@{ "1" = "Channel 1"; "2" = "Channel 2"; "3" = "Channel 3" }
         hemisphere_mode = "Left and Right"
         global_thresholds = [ordered]@{ channel1 = "50"; channel2 = "50"; channel3 = "50"; locked = $false }
-        cellpose_parameters = [ordered]@{ cellprob = "-0.5"; flow = "0.4" }
+        cellpose_parameters = [ordered]@{ model = "cpsam_v2"; cellprob = "-0.5"; flow = "0.4" }
         ui_settings = [ordered]@{
             font_size = "9"; log_font_size = "9"; window_width = "1080"; window_height = "820"
             window_size_preset = "Recommended (automatic monitor fit)"
@@ -255,8 +255,8 @@ try {
     ) -Description "Install Cellpose-SAM and scikit-image"
     if (-not $SkipModelDownload) {
         Invoke-Checked -FilePath $CellposePython -Arguments @(
-            "-c", "from cellpose import models; models.CellposeModel(gpu=False, pretrained_model='cpsam'); print('cpsam model ready')"
-        ) -Description "Download and validate the Cellpose-SAM cpsam model"
+            "-c", "from cellpose import models; models.CellposeModel(gpu=False, pretrained_model='cpsam_v2'); print('cpsam_v2 model ready')"
+        ) -Description "Download and validate the Cellpose-SAM cpsam_v2 model"
     }
 
     Write-Step "Installing QuPath 0.7.0"
@@ -325,7 +325,7 @@ try {
     $launcherLines = @(
         "@echo off",
         "cd /d `"$InstallRoot`"",
-        "start `"Brain Cell Counter v2.5.1`" `"$($CellposePython.Replace('python.exe', 'pythonw.exe'))`" `"$InstallRoot\run_brain_cell_counter_v1.0.py`""
+        "start `"Brain Cell Counter v2.6.0`" `"$($CellposePython.Replace('python.exe', 'pythonw.exe'))`" `"$InstallRoot\run_brain_cell_counter_v1.0.py`""
     )
     Set-Content -LiteralPath $launcherPath -Value $launcherLines -Encoding ASCII
     $verifyLauncher = Join-Path $InstallRoot "Verify_Installation.cmd"
@@ -351,7 +351,7 @@ try {
 
     Write-Step "Installation complete"
     Write-InstallLog "$ProductName was installed successfully." Green
-    Write-InstallLog "Desktop shortcut: Brain Cell Counter (v2.5.1)" Green
+    Write-InstallLog "Desktop shortcut: Brain Cell Counter (v2.6.0)" Green
     Write-InstallLog "Installation report: $InstallRoot\Installation_Report.txt" Green
     Write-Host ""
     Write-Host "IMPORTANT:" -ForegroundColor Yellow

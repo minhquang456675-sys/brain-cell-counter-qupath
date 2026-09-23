@@ -1,4 +1,4 @@
-// Brain Cell Counter v2.5.1 - headless QuPath analysis engine
+// Brain Cell Counter v2.6.0 - headless QuPath analysis engine
 //
 // This script is launched by the Python v2 GUI. It expects ABBA atlas
 // registration files to have already been exported into the QuPath entry.
@@ -43,6 +43,7 @@ def parameters = [
         requireDapiThreshold: 'false',
         cellprobThreshold   : '-0.5',
         flowThreshold       : '0.4',
+        cellposeModel       : 'cpsam',
         reuseDetections     : 'true',
         cellposePythonPath  : '',
         channel1Name        : 'NeuN',
@@ -77,6 +78,9 @@ double dapiThreshold = parameters.dapiThreshold as double
 boolean requireDapiThreshold = parameters.requireDapiThreshold.toBoolean()
 double cellprobThreshold = parameters.cellprobThreshold as double
 double flowThreshold = parameters.flowThreshold as double
+String cellposeModel = parameters.cellposeModel?.trim() ?: 'cpsam'
+if (!(cellposeModel in ['cpsam', 'cpsam_v2']))
+    throw new IllegalArgumentException("Unsupported Cellpose model '${cellposeModel}'.")
 boolean reuseDetections = parameters.reuseDetections.toBoolean()
 String cellposePythonPath = parameters.cellposePythonPath
 String channel1Name = parameters.channel1Name?.trim() ?: 'NeuN'
@@ -310,7 +314,7 @@ boolean atlasReady = namedAtlasRoot != null && !leafRegions.isEmpty() && ontolog
         ontologyMatchedLeafIds > 0
 
 def validation = [
-        version             : '2.5.1',
+        version             : '2.6.0',
         image               : imageName,
         channels            : channelCount,
         annotations         : annotations.size(),
@@ -329,6 +333,7 @@ def validation = [
         atlasImportSucceeded : atlasImportSucceeded,
         atlasImportError     : atlasImportError,
         cellposeAvailable   : cellposeAvailable,
+        cellposeModel       : cellposeModel,
         cellposePythonPath  : configuredCellposePython,
         cellposePythonConfigured: cellposePythonConfigured,
         pixelWidthMicrons   : imageData.getServer().getPixelCalibration().getPixelWidthMicrons(),
@@ -430,7 +435,7 @@ if (mode == 'cellpose-calibrate') {
                 parent
             }
             try {
-                def calibrationCellpose = Cellpose2D.builder('cpsam')
+                def calibrationCellpose = Cellpose2D.builder(cellposeModel)
                         .channels(dapiChannel - 1)
                         .useCellposeSAM()
                         .normalizePercentilesGlobal(0.5, 99.5, 10)
@@ -500,7 +505,8 @@ if (mode == 'cellpose-calibrate') {
     }
 
     def calibration = [
-            version: '2.5.1',
+            version: '2.6.0',
+            cellposeModel: cellposeModel,
             mode: 'cellpose-calibrate',
             image: imageName,
             roiCount: cropDefinitions.size(),
@@ -671,7 +677,8 @@ if (mode == 'threshold-profile') {
         event('progress', [percent: 96, stage: "Calculating ${pairKeys.join(' + ')} double-positive threshold grid"])
 
     def profile = [
-            version             : '2.5.1',
+            version             : '2.6.0',
+            cellposeModel       : cellposeModel,
             mode                : 'threshold-profile',
             image               : imageName,
             detections          : profileDetections.size(),
@@ -709,7 +716,7 @@ if (mode == 'cellpose-smoke') {
     event('log', "Running non-saving Cellpose smoke test in leaf region ${smokeParent.getName()}.")
     event('progress', [percent: 18, stage: 'Starting Cellpose smoke test'])
     try {
-        def smokeCellpose = Cellpose2D.builder('cpsam')
+        def smokeCellpose = Cellpose2D.builder(cellposeModel)
                 .channels(dapiChannel - 1)
                 .useCellposeSAM()
                 .normalizePercentilesGlobal(0.5, 99.5, 10)
@@ -722,7 +729,8 @@ if (mode == 'cellpose-smoke') {
         smokeCellpose.detectObjects(imageData, [smokeParent])
         event('progress', [percent: 92, stage: 'Cellpose smoke test complete'])
         int created = getDetectionObjects().size() - before
-        event('done', [mode: 'cellpose-smoke', regionId: smokeParent.getName(), detectionsCreated: created])
+        event('done', [mode: 'cellpose-smoke', cellposeModel: cellposeModel,
+                       regionId: smokeParent.getName(), detectionsCreated: created])
         return
     } catch (Throwable error) {
         fail("Cellpose smoke test failed: ${error.class.simpleName}: ${error.message}")
@@ -761,9 +769,9 @@ if (reused && !reuseDetections)
     fail("Found ${detections.size()} existing detections. Enable reuse or remove them deliberately in QuPath.")
 
 if (!reused) {
-    event('log', "Running Cellpose-SAM on ABBA Root ROI; DAPI channel ${dapiChannel} (GUI one-based).")
+    event('log', "Running Cellpose-SAM model ${cellposeModel} on ABBA Root ROI; DAPI channel ${dapiChannel} (GUI one-based).")
     event('progress', [percent: 18, stage: 'Preparing Cellpose tiles'])
-    def cellpose = Cellpose2D.builder('cpsam')
+    def cellpose = Cellpose2D.builder(cellposeModel)
             .channels(dapiChannel - 1)
             .useCellposeSAM()
             .normalizePercentilesGlobal(0.5, 99.5, 10)
@@ -784,6 +792,10 @@ if (!reused) {
 
 if (detections.isEmpty())
     fail('Cellpose returned no detections inside the ABBA Root ROI.')
+
+// Existing QuPath detections predate model provenance metadata. Never label
+// reused masks as though the newly selected model created them.
+String detectionModelLabel = reused ? 'existing detections (unknown model)' : cellposeModel
 
 String neunMeasurement = "Channel ${neunChannel}: Mean"
 String cfosMeasurement = "Channel ${cfosChannel}: Mean"
@@ -984,7 +996,7 @@ def outputDirectory = project.getPath().getParent().resolve('brain_cell_counter_
 event('progress', [percent: 94, stage: 'Writing regional CSV'])
 Files.createDirectories(outputDirectory)
 String safeImageName = imageName.replaceAll('[^A-Za-z0-9._-]+', '_')
-def outputFile = outputDirectory.resolve("${safeImageName}_regional_counts_v2.1.csv").toFile()
+def outputFile = outputDirectory.resolve("${safeImageName}_regional_counts_v2.2.csv").toFile()
 outputFile.withWriter('UTF-8') { writer ->
     writer.write('\uFEFF')
     String channel1Header = csvHeaderName(channel1Name)
@@ -994,7 +1006,7 @@ outputFile.withWriter('UTF-8') { writer ->
     String triplePositiveHeader = "${channel3Header}+${channel1Header}+${channel2Header}"
     writer.writeLine("Image,Region_ID,Acronym,Region_Name,Major_Group,Hierarchy_Level,Hemisphere,${channel3Header},${channel1Header}_Positive,${channel2Header}_Positive,${doublePositiveHeader},${triplePositiveHeader},Activated_${channel1Header}_Percent," +
             "Pixel_Size_X_um,Pixel_Size_Y_um,Region_Area_mm2,${channel3Header}_Density_per_mm2,${channel1Header}_Positive_Density_per_mm2,${channel2Header}_Positive_Density_per_mm2,${doublePositiveHeader}_Density_per_mm2,${triplePositiveHeader}_Density_per_mm2," +
-            "${channel1Header}_Positive_Percent_of_${channel3Header},${channel2Header}_Positive_Percent_of_${channel3Header},${triplePositiveHeader}_Percent_of_${channel1Header},${triplePositiveHeader}_Percent_of_${channel2Header}")
+            "${channel1Header}_Positive_Percent_of_${channel3Header},${channel2Header}_Positive_Percent_of_${channel3Header},${triplePositiveHeader}_Percent_of_${channel1Header},${triplePositiveHeader}_Percent_of_${channel2Header},Cellpose_Model")
     rows.values().sort { a, b ->
         (a.acronym <=> b.acronym) ?: (a.hemisphere <=> b.hemisphere)
     }.each { row ->
@@ -1013,7 +1025,8 @@ outputFile.withWriter('UTF-8') { writer ->
                 formatMetric(percentage(row.neun as int, row.dapi as int), 4),
                 formatMetric(percentage(row.cfos as int, row.dapi as int), 4),
                 formatMetric(percentage(row.triple as int, row.neun as int), 4),
-                formatMetric(percentage(row.triple as int, row.cfos as int), 4)
+                formatMetric(percentage(row.triple as int, row.cfos as int), 4),
+                detectionModelLabel
         ].collect(csvEscape).join(','))
     }
 }
@@ -1133,15 +1146,16 @@ try {
     graphics.dispose()
 }
 
-def atlasOutputFile = outputDirectory.resolve("${safeImageName}_atlas_overlay_v2.1.png").toFile()
+def atlasOutputFile = outputDirectory.resolve("${safeImageName}_atlas_overlay_v2.2.png").toFile()
 if (!ImageIO.write(atlasImage, 'PNG', atlasOutputFile))
     fail('No PNG image writer is available for the atlas overlay.')
 event('progress', [percent: 98, stage: 'Atlas overlay PNG complete'])
 
 def summary = [
-        version: '2.5.1',
+        version: '2.6.0',
         image: imageName,
         detectionSource: reused ? 'reused' : 'cellpose',
+        cellposeModel: detectionModelLabel,
         counts: counts,
         channelNames: [channel1Name, channel2Name, channel3Name],
         hemisphereMode: hemisphereMode,

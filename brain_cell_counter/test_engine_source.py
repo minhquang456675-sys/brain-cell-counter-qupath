@@ -30,6 +30,12 @@ class EngineSourceRegressionTests(unittest.TestCase):
         self.assertIn("row.doublePositive", self.engine)
         self.assertNotIn("Triple_Positive,", self.engine)
 
+    def test_engine_uses_selected_cellpose_model_everywhere(self) -> None:
+        """Calibration, smoke testing, and analysis must test the same model."""
+        self.assertEqual(self.engine.count("Cellpose2D.builder(cellposeModel)"), 3)
+        self.assertIn("Cellpose_Model", self.engine)
+        self.assertNotIn("Cellpose2D.builder('cpsam')", self.engine)
+
 
 if __name__ == "__main__":
     unittest.main()

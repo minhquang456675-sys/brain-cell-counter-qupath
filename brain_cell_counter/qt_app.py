@@ -50,6 +50,7 @@ from PySide6.QtWidgets import (
 )
 
 from .app_core import (
+    SUPPORTED_CELLPOSE_MODELS,
     ENGINE_FILENAME,
     analysis_arguments,
     analysis_signature,
@@ -322,6 +323,7 @@ class BrainCellCounterQt(QMainWindow):
             "require_channel_3": False,
             "cellprob": "-0.5",
             "flow": "0.4",
+            "cellpose_model": "cpsam",
             "reuse_detections": True,
             "hemisphere_mode": "Left and Right",
             "channel_1_start": "0",
@@ -358,6 +360,7 @@ class BrainCellCounterQt(QMainWindow):
             cellpose = saved.get("cellpose_parameters", {})
             settings["cellprob"] = str(cellpose.get("cellprob", settings["cellprob"]))
             settings["flow"] = str(cellpose.get("flow", settings["flow"]))
+            settings["cellpose_model"] = str(cellpose.get("model", settings["cellpose_model"]))
             settings["hemisphere_mode"] = saved.get("hemisphere_mode", settings["hemisphere_mode"])
             settings["qupath"] = saved.get("qupath_path", settings["qupath"])
             settings["cellpose_python"] = saved.get("cellpose_python_path", settings["cellpose_python"])
@@ -423,6 +426,7 @@ class BrainCellCounterQt(QMainWindow):
                 },
             },
             "cellpose_parameters": {
+                "model": str(self.settings["cellpose_model"]),
                 "cellprob": str(self.settings["cellprob"]),
                 "flow": str(self.settings["flow"]),
             },
@@ -571,8 +575,15 @@ class BrainCellCounterQt(QMainWindow):
         self.hemisphere.setCurrentText(str(self.settings["hemisphere_mode"]))
         self.cellprob = self._field(self.settings["cellprob"], "Lower values usually create more masks.")
         self.flow = self._field(self.settings["flow"], "Lower values reject more questionable masks.")
+        self.cellpose_model = QComboBox()
+        self.cellpose_model.addItems(list(SUPPORTED_CELLPOSE_MODELS))
+        self.cellpose_model.setCurrentText(str(self.settings["cellpose_model"]))
+        self.cellpose_model.setToolTip(
+            "cpsam is the validated baseline. cpsam_v2 reduces spurious masks in low-contrast regions; validate it on representative ROIs before batch use."
+        )
         behavior_form.addRow("Detections", self.reuse)
         behavior_form.addRow("Hemisphere", self.hemisphere)
+        behavior_form.addRow("Cellpose model", self.cellpose_model)
         behavior_form.addRow("Cellprob threshold", self.cellprob)
         behavior_form.addRow("Flow threshold", self.flow)
         behavior.addLayout(behavior_form)
@@ -762,6 +773,7 @@ class BrainCellCounterQt(QMainWindow):
         self.settings["require_channel_3"] = self.require_channel_3.isChecked()
         self.settings["reuse_detections"] = self.reuse.isChecked()
         self.settings["hemisphere_mode"] = self.hemisphere.currentText()
+        self.settings["cellpose_model"] = self.cellpose_model.currentText()
         self.settings["cellprob"] = self.cellprob.text().strip()
         self.settings["flow"] = self.flow.text().strip()
         for (index, key), field in self.threshold_range_fields.items():
@@ -816,13 +828,13 @@ class BrainCellCounterQt(QMainWindow):
 3. Use **Calibration** only when pixel calibration is missing or incorrect; every scale bar requires human confirmation.
 4. Run **Import ABBA** when exported atlas annotations have not been loaded.
 5. Run **Preflight**, close the QuPath desktop, then run **Validate**.
-6. Review Channel 1/2/3 names, thresholds, Cellprob, Flow, reuse, and hemisphere mode.
+6. Review Channel 1/2/3 names, thresholds, Cellpose model, Cellprob, Flow, reuse, and hemisphere mode.
 7. Click **Analyze**, choose entries, and confirm. Entries run sequentially from top to bottom.
 8. Review regional CSV files, atlas overlays, the run log, and saved detections in QuPath.
 
 ## Segmentation and classification
 
-Cellpose-SAM creates DAPI-defined objects. Channel 1 and Channel 2 positivity is then classified from the mean intensity inside each object. Counts are object-based co-expression, not pixel-level colocalization. Lower Cellprob generally creates more masks; a lower Flow threshold rejects more questionable masks.
+Cellpose-SAM creates DAPI-defined objects. `cpsam` is the validated baseline; `cpsam_v2` must be compared on representative ROIs before batch use. Changing the selection does not relabel reused legacy detections. Channel 1 and Channel 2 positivity is then classified from the mean intensity inside each object. Counts are object-based co-expression, not pixel-level colocalization. Lower Cellprob generally creates more masks; a lower Flow threshold rejects more questionable masks.
 
 ## Global threshold algorithm
 
