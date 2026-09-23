@@ -57,9 +57,10 @@ atlas identifiers, hemisphere, area, and cell counts visible. Use **Counts**,
 **Physical metrics**, **Percentages**, or **Show all** only when those columns
 are required. Use **Choose columns…** to change individual checkboxes.
 
-Schema 2.3 also shows `Functional_Subregion` as an essential identifier. The
-initial curated group labels Allen `ACA`, `PL`, and `ILA` descendants as
-`mPFC`; Allen region IDs, acronyms, and names remain unchanged.
+Schema 2.4 also shows `Functional_Subregion` as an essential identifier. The
+versioned mapping covers common cortical, hippocampal, amygdalar, striatal, and
+hypothalamic groups. Allen region IDs, acronyms, and names remain unchanged.
+`Functional_Subregion_Config` records the mapping schema and SHA-256.
 
 Click **EXPORT VISIBLE CSV** to create a compact CSV containing exactly the
 currently selected columns and every result row. The versioned master regional
@@ -194,7 +195,7 @@ The Analysis page includes a **Cellpose model** selector:
   representative ROIs before it is used for a complete batch.
 
 The selected model is saved in local settings, included in the checkpoint
-signature, and written to output schema 2.3. Selecting a new model does not
+signature, and written to output schema 2.4. Selecting a new model does not
 retroactively change existing QuPath detections. Reused legacy detections are
 reported as having an unknown model; remove them deliberately before a real
 model comparison.

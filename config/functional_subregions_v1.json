@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.0",
+  "description": "Curated functional groupings layered on top of Allen Mouse Brain Atlas acronyms. A node matches when its ontology path contains one listed root acronym.",
+  "groups": [
+    {
+      "name": "mPFC",
+      "root_acronyms": ["ACA", "PL", "ILA"],
+      "description": "Medial prefrontal cortex; ORBm and MOs are intentionally excluded."
+    },
+    {
+      "name": "Motor_Cortex",
+      "root_acronyms": ["MOp", "MOs"]
+    },
+    {
+      "name": "Somatosensory_Cortex",
+      "root_acronyms": ["SSp", "SSs"]
+    },
+    {
+      "name": "Visual_Cortex",
+      "root_acronyms": ["VIS"]
+    },
+    {
+      "name": "Auditory_Cortex",
+      "root_acronyms": ["AUD"]
+    },
+    {
+      "name": "Retrosplenial_Cortex",
+      "root_acronyms": ["RSP"]
+    },
+    {
+      "name": "Hippocampus_CA",
+      "root_acronyms": ["CA1", "CA2", "CA3"]
+    },
+    {
+      "name": "Dentate_Gyrus",
+      "root_acronyms": ["DG"]
+    },
+    {
+      "name": "Subiculum_Complex",
+      "root_acronyms": ["SUB", "ProS", "PRE", "POST"]
+    },
+    {
+      "name": "Basolateral_Amygdala",
+      "root_acronyms": ["BLA", "BMA", "LA"]
+    },
+    {
+      "name": "Central_Amygdala",
+      "root_acronyms": ["CEA"]
+    },
+    {
+      "name": "Medial_Amygdala",
+      "root_acronyms": ["MEA"]
+    },
+    {
+      "name": "Dorsal_Striatum",
+      "root_acronyms": ["CP"]
+    },
+    {
+      "name": "Ventral_Striatum",
+      "root_acronyms": ["ACB", "OT"]
+    },
+    {
+      "name": "Paraventricular_Hypothalamus",
+      "root_acronyms": ["PVH"]
+    },
+    {
+      "name": "Dorsomedial_Hypothalamus",
+      "root_acronyms": ["DMH"]
+    },
+    {
+      "name": "Ventromedial_Hypothalamus",
+      "root_acronyms": ["VMH"]
+    },
+    {
+      "name": "Lateral_Hypothalamus",
+      "root_acronyms": ["LHA"]
+    }
+  ]
+}

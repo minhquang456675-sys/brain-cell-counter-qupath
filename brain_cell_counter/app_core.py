@@ -23,11 +23,17 @@ SUPPORTED_CELLPOSE_MODELS = ("cpsam", "cpsam_v2")
 
 ENGINE_FILENAME = "Brain_Cell_Counter_QuPath_Engine_v1.0.groovy"
 QUPATH_SCRIPTS_DIRECTORY = "qupath_scripts"
+FUNCTIONAL_SUBREGION_CONFIG = "functional_subregions_v1.json"
 
 
 def qupath_script_path(filename: str) -> Path:
     """Resolve a packaged QuPath/Fiji script from its categorized folder."""
     return Path(__file__).resolve().parent.parent / QUPATH_SCRIPTS_DIRECTORY / filename
+
+
+def functional_subregion_config_path() -> Path:
+    """Resolve the versioned curated subregion mapping shipped with the app."""
+    return Path(__file__).resolve().parent.parent / "config" / FUNCTIONAL_SUBREGION_CONFIG
 
 
 @dataclass(frozen=True)
@@ -137,6 +143,10 @@ def analysis_arguments(settings: dict[str, object], mode: str) -> list[str]:
             f"Unsupported Cellpose model '{cellpose_model}'. Choose one of: "
             + ", ".join(SUPPORTED_CELLPOSE_MODELS)
         )
+    subregion_config = functional_subregion_config_path()
+    if not subregion_config.is_file():
+        raise ValueError(f"Functional-subregion configuration is missing: {subregion_config}")
+    subregion_config_sha256 = hashlib.sha256(subregion_config.read_bytes()).hexdigest()
     hemisphere = str(settings.get("hemisphere_mode", "Left and Right"))
     values: dict[str, object] = {
         "mode": mode,
@@ -166,6 +176,8 @@ def analysis_arguments(settings: dict[str, object], mode: str) -> list[str]:
         "channel3ThresholdEnd": float(settings.get("channel_3_end", 200)),
         "channel3ThresholdStep": float(settings.get("channel_3_step", 5)),
         "thresholdPair": str(settings.get("threshold_pair", "channel1-channel2")),
+        "functionalSubregionConfigPath": str(subregion_config),
+        "functionalSubregionConfigSha256": subregion_config_sha256,
     }
     return [f"{key}={value}" for key, value in values.items()]
 

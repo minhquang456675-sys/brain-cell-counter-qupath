@@ -1,4 +1,4 @@
-// Brain Cell Counter v2.7.0 - headless QuPath analysis engine
+// Brain Cell Counter v2.8.0 - headless QuPath analysis engine
 //
 // This script is launched by the Python v2 GUI. It expects ABBA atlas
 // registration files to have already been exported into the QuPath entry.
@@ -17,6 +17,8 @@ import qupath.lib.regions.ImagePlane
 import qupath.lib.roi.RoiTools
 import qupath.lib.roi.ROIs
 import java.nio.file.Files
+import java.security.MessageDigest
+import java.math.BigInteger
 import java.util.Locale
 import java.awt.BasicStroke
 import java.awt.Color
@@ -59,7 +61,9 @@ def parameters = [
         channel3ThresholdStart: '0',
         channel3ThresholdEnd: '200',
         channel3ThresholdStep: '5',
-        thresholdPair       : 'channel1-channel2'
+        thresholdPair       : 'channel1-channel2',
+        functionalSubregionConfigPath: '',
+        functionalSubregionConfigSha256: ''
 ]
 
 args.each { argument ->
@@ -97,6 +101,8 @@ double channel3ThresholdStart = parameters.channel3ThresholdStart as double
 double channel3ThresholdEnd = parameters.channel3ThresholdEnd as double
 double channel3ThresholdStep = parameters.channel3ThresholdStep as double
 String thresholdPair = parameters.thresholdPair?.trim()?.toLowerCase(Locale.ROOT) ?: 'channel1-channel2'
+String functionalSubregionConfigPath = parameters.functionalSubregionConfigPath?.trim() ?: ''
+String expectedFunctionalSubregionConfigSha256 = parameters.functionalSubregionConfigSha256?.trim()?.toLowerCase(Locale.ROOT) ?: ''
 
 if (cellposePythonPath != null && !cellposePythonPath.trim().isEmpty()) {
     CellposeSetup.getInstance().setCellposePythonPath(cellposePythonPath)
@@ -256,13 +262,38 @@ def leafRegions = atlasAnnotations.findAll { annotation ->
 }
 
 def ontologyById = [:]
-// Curated functional groupings complement the Allen ontology without changing
-// its native region names. mPFC is conservatively defined as ACA, PL, and ILA
-// plus all their descendants; disputed additions such as ORBm and MOs are not
-// included unless a future, explicitly versioned mapping adds them.
-def functionalSubregionRoots = [
-        mPFC: ['ACA', 'PL', 'ILA'] as Set
-]
+// Curated groupings are kept in a versioned external file so the biological
+// definitions are reviewable without changing Allen's native ontology fields.
+File functionalSubregionConfigFile = functionalSubregionConfigPath ?
+        new File(functionalSubregionConfigPath) : null
+if (functionalSubregionConfigFile == null || !functionalSubregionConfigFile.isFile())
+    fail("Functional-subregion configuration is missing: ${functionalSubregionConfigPath}")
+String functionalSubregionConfigSha256 = String.format('%064x', new BigInteger(1,
+        MessageDigest.getInstance('SHA-256').digest(Files.readAllBytes(functionalSubregionConfigFile.toPath()))))
+if (!expectedFunctionalSubregionConfigSha256 ||
+        functionalSubregionConfigSha256 != expectedFunctionalSubregionConfigSha256)
+    fail('Functional-subregion configuration SHA-256 does not match the analysis request.')
+def functionalSubregionConfig = GsonTools.getInstance().fromJson(
+        functionalSubregionConfigFile.getText('UTF-8'), Map.class)
+String functionalSubregionSchema = functionalSubregionConfig.schema_version?.toString() ?: ''
+String functionalSubregionConfigLabel = "${functionalSubregionSchema}:${functionalSubregionConfigSha256}"
+def functionalSubregionGroups = (functionalSubregionConfig.groups ?: []).collect { group ->
+    String groupName = group.name?.toString()?.trim()
+    Set<String> rootAcronyms = (group.root_acronyms ?: []).collect {
+        it?.toString()?.trim()
+    }.findAll { it } as Set
+    if (!groupName || rootAcronyms.isEmpty())
+        fail('Every functional-subregion group requires a name and at least one root acronym.')
+    return [name: groupName, roots: rootAcronyms]
+}
+if (!functionalSubregionSchema || functionalSubregionGroups.isEmpty())
+    fail('Functional-subregion configuration has no schema version or groups.')
+def duplicateGroupNames = functionalSubregionGroups.groupBy { it.name }.findAll { name, matches ->
+    matches.size() > 1
+}.keySet()
+if (!duplicateGroupNames.isEmpty())
+    fail("Functional-subregion configuration has duplicate names: ${duplicateGroupNames.sort().join(', ')}")
+def functionalSubregionOverlaps = []
 def project = getProject()
 def ontologyFile = null
 if (project != null) {
@@ -291,9 +322,16 @@ if (project != null) {
             String majorGroup = majorNode?.acronym == 'HPF' ? 'Hippocampus' :
                     (majorNode?.name ?: 'Unclassified')
             Set<String> ontologyAcronyms = ontologyPath.collect { it.acronym?.toString() }.findAll { it } as Set
-            String functionalSubregion = functionalSubregionRoots.find { groupName, rootAcronyms ->
-                !ontologyAcronyms.intersect(rootAcronyms as Set).isEmpty()
-            }?.key ?: ''
+            def matchingFunctionalGroups = functionalSubregionGroups.findAll { group ->
+                !ontologyAcronyms.intersect(group.roots as Set).isEmpty()
+            }
+            if (matchingFunctionalGroups.size() > 1) {
+                functionalSubregionOverlaps << [
+                        acronym: currentNode.acronym,
+                        groups: matchingFunctionalGroups.collect { it.name }
+                ]
+            }
+            String functionalSubregion = matchingFunctionalGroups ? matchingFunctionalGroups[0].name : ''
             if (id != null) {
                 ontologyById[id] = [
                         acronym  : currentNode.acronym,
@@ -306,6 +344,10 @@ if (project != null) {
             node.children?.each { visitOntology(it, ontologyPath) }
         }
         visitOntology(ontology.root, [])
+        if (!functionalSubregionOverlaps.isEmpty()) {
+            def firstOverlap = functionalSubregionOverlaps[0]
+            fail("Functional-subregion groups overlap at ${firstOverlap.acronym}: ${firstOverlap.groups.join(', ')}")
+        }
     }
 }
 
@@ -326,7 +368,7 @@ boolean atlasReady = namedAtlasRoot != null && !leafRegions.isEmpty() && ontolog
         ontologyMatchedLeafIds > 0
 
 def validation = [
-        version             : '2.7.0',
+        version             : '2.8.0',
         image               : imageName,
         channels            : channelCount,
         annotations         : annotations.size(),
@@ -340,6 +382,8 @@ def validation = [
         ontologyEntries     : ontologyById.size(),
         majorGroups         : ontologyById.values().collect { it.majorGroup }.findAll { it }.unique().sort(),
         functionalSubregions: ontologyById.values().collect { it.functionalSubregion }.findAll { it }.unique().sort(),
+        functionalSubregionSchema: functionalSubregionSchema,
+        functionalSubregionConfigSha256: functionalSubregionConfigSha256,
         ontologyMatchedLeaves: ontologyMatchedLeafIds,
         atlasReady           : atlasReady,
         atlasImportAttempted : atlasImportAttempted,
@@ -518,7 +562,7 @@ if (mode == 'cellpose-calibrate') {
     }
 
     def calibration = [
-            version: '2.7.0',
+            version: '2.8.0',
             cellposeModel: cellposeModel,
             mode: 'cellpose-calibrate',
             image: imageName,
@@ -690,7 +734,7 @@ if (mode == 'threshold-profile') {
         event('progress', [percent: 96, stage: "Calculating ${pairKeys.join(' + ')} double-positive threshold grid"])
 
     def profile = [
-            version             : '2.7.0',
+            version             : '2.8.0',
             cellposeModel       : cellposeModel,
             mode                : 'threshold-profile',
             image               : imageName,
@@ -1011,7 +1055,7 @@ def outputDirectory = project.getPath().getParent().resolve('brain_cell_counter_
 event('progress', [percent: 94, stage: 'Writing regional CSV'])
 Files.createDirectories(outputDirectory)
 String safeImageName = imageName.replaceAll('[^A-Za-z0-9._-]+', '_')
-def outputFile = outputDirectory.resolve("${safeImageName}_regional_counts_v2.3.csv").toFile()
+def outputFile = outputDirectory.resolve("${safeImageName}_regional_counts_v2.4.csv").toFile()
 outputFile.withWriter('UTF-8') { writer ->
     writer.write('\uFEFF')
     String channel1Header = csvHeaderName(channel1Name)
@@ -1021,7 +1065,7 @@ outputFile.withWriter('UTF-8') { writer ->
     String triplePositiveHeader = "${channel3Header}+${channel1Header}+${channel2Header}"
     writer.writeLine("Image,Region_ID,Acronym,Region_Name,Major_Group,Functional_Subregion,Hierarchy_Level,Hemisphere,${channel3Header},${channel1Header}_Positive,${channel2Header}_Positive,${doublePositiveHeader},${triplePositiveHeader},Activated_${channel1Header}_Percent," +
             "Pixel_Size_X_um,Pixel_Size_Y_um,Region_Area_mm2,${channel3Header}_Density_per_mm2,${channel1Header}_Positive_Density_per_mm2,${channel2Header}_Positive_Density_per_mm2,${doublePositiveHeader}_Density_per_mm2,${triplePositiveHeader}_Density_per_mm2," +
-            "${channel1Header}_Positive_Percent_of_${channel3Header},${channel2Header}_Positive_Percent_of_${channel3Header},${triplePositiveHeader}_Percent_of_${channel1Header},${triplePositiveHeader}_Percent_of_${channel2Header},Cellpose_Model")
+            "${channel1Header}_Positive_Percent_of_${channel3Header},${channel2Header}_Positive_Percent_of_${channel3Header},${triplePositiveHeader}_Percent_of_${channel1Header},${triplePositiveHeader}_Percent_of_${channel2Header},Cellpose_Model,Functional_Subregion_Config")
     rows.values().sort { a, b ->
         (a.acronym <=> b.acronym) ?: (a.hemisphere <=> b.hemisphere)
     }.each { row ->
@@ -1041,7 +1085,7 @@ outputFile.withWriter('UTF-8') { writer ->
                 formatMetric(percentage(row.cfos as int, row.dapi as int), 4),
                 formatMetric(percentage(row.triple as int, row.neun as int), 4),
                 formatMetric(percentage(row.triple as int, row.cfos as int), 4),
-                detectionModelLabel
+                detectionModelLabel, functionalSubregionConfigLabel
         ].collect(csvEscape).join(','))
     }
 }
@@ -1161,13 +1205,13 @@ try {
     graphics.dispose()
 }
 
-def atlasOutputFile = outputDirectory.resolve("${safeImageName}_atlas_overlay_v2.3.png").toFile()
+def atlasOutputFile = outputDirectory.resolve("${safeImageName}_atlas_overlay_v2.4.png").toFile()
 if (!ImageIO.write(atlasImage, 'PNG', atlasOutputFile))
     fail('No PNG image writer is available for the atlas overlay.')
 event('progress', [percent: 98, stage: 'Atlas overlay PNG complete'])
 
 def summary = [
-        version: '2.7.0',
+        version: '2.8.0',
         image: imageName,
         detectionSource: reused ? 'reused' : 'cellpose',
         cellposeModel: detectionModelLabel,
@@ -1181,6 +1225,11 @@ def summary = [
         majorGroupsWithCells: rows.values().findAll {
             it.dapi > 0 || it.neun > 0 || it.cfos > 0 || it.triple > 0
         }.collect { it.majorGroup }.unique().sort(),
+        functionalSubregionsWithCells: rows.values().findAll {
+            it.functionalSubregion && (it.dapi > 0 || it.neun > 0 || it.cfos > 0 || it.triple > 0)
+        }.collect { it.functionalSubregion }.unique().sort(),
+        functionalSubregionSchema: functionalSubregionSchema,
+        functionalSubregionConfigSha256: functionalSubregionConfigSha256,
         physicalCalibrationValid: physicalCalibrationValid,
         unassigned: unassigned,
         csv: outputFile.absolutePath,

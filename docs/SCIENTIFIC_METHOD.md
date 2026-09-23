@@ -100,15 +100,15 @@ at least 3 consecutive stable threshold steps
 The optimizer writes:
 
 ```text
-global_threshold_optimization_v2.3.csv
-global_threshold_optimization_v2.3.json
-global_threshold_optimization_v2.3.html
+global_threshold_optimization_v2.4.csv
+global_threshold_optimization_v2.4.json
+global_threshold_optimization_v2.4.html
 ```
 
 Pair objectives also write:
 
 ```text
-channel_pair_double_positive_optimization_v2.3.csv
+channel_pair_double_positive_optimization_v2.4.csv
 ```
 
 Reports include total counts, per-section counts, percentage changes,
@@ -139,11 +139,18 @@ measurements from the original image, not restored or synthesized pixels.
 
 Allen atlas names and IDs remain the primary anatomical result. The optional
 `Functional_Subregion` column adds a transparent analysis grouping without
-renaming or merging the Allen rows. In schema 2.3, `mPFC` contains `ACA`, `PL`,
-and `ILA` and all their ontology descendants. `ORBm` and `MOs` are not included
-by default because the literature does not use one universal rodent mPFC
-boundary. Any future grouping change requires a new version and biological
-review before datasets are combined.
+renaming or merging the Allen rows. Definitions are read from the versioned
+`config/functional_subregions_v1.json`. Schema 2.4 includes mPFC; motor,
+somatosensory, visual, auditory, and retrosplenial cortex; hippocampal CA,
+dentate gyrus, and subiculum complex; basolateral, central, and medial amygdala;
+dorsal and ventral striatum; and four hypothalamic groups. Every descendant of
+a configured Allen root acronym inherits that label.
+
+The engine rejects overlapping group definitions rather than silently choosing
+one. `Functional_Subregion_Config` records the mapping schema and SHA-256 in
+every CSV. `ORBm` and `MOs` remain excluded from mPFC because the literature
+does not use one universal rodent mPFC boundary. Any mapping change requires
+biological review before datasets are combined.
 
 ## GPU validation baseline
 

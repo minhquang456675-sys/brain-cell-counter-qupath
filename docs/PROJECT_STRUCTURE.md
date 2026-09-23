@@ -22,6 +22,8 @@ Flourescent counting/
 │   ├── Brain_Cell_Counter_Calibration_Preview_v1.0.groovy
 │   ├── Brain_Cell_Counter_Calibration_Apply_v1.0.groovy
 │   └── Brain_Cell_Counter_Fiji_Calibration_v1.0.groovy
+├── config/
+│   └── functional_subregions_v1.json  Versioned curated Allen groupings
 ├── installer/                   Installer source and dependency verification
 ├── docs/                        Architecture, methods, installation, user guide
 ├── run_brain_cell_counter_v1.0.py  Stable Python launcher used by shortcuts

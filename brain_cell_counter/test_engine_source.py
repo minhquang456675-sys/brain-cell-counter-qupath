@@ -36,10 +36,11 @@ class EngineSourceRegressionTests(unittest.TestCase):
         self.assertIn("Cellpose_Model", self.engine)
         self.assertNotIn("Cellpose2D.builder('cpsam')", self.engine)
 
-    def test_engine_exports_curated_mpfc_functional_subregion(self) -> None:
-        """Keep the declared mPFC definition explicit and ancestor-aware."""
+    def test_engine_exports_configured_functional_subregions(self) -> None:
+        """Keep functional groups external, versioned, and ancestor-aware."""
         self.assertIn("Functional_Subregion", self.engine)
-        self.assertIn("mPFC: ['ACA', 'PL', 'ILA'] as Set", self.engine)
+        self.assertIn("functionalSubregionConfigPath", self.engine)
+        self.assertIn("functionalSubregionConfig.schema_version", self.engine)
         self.assertIn("ontologyPath.collect", self.engine)
         self.assertIn("row.functionalSubregion", self.engine)
 

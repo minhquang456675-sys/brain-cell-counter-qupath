@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import tempfile
 import unittest
 from pathlib import Path
@@ -10,6 +11,7 @@ from pathlib import Path
 from brain_cell_counter.app_core import (
     analysis_arguments,
     analysis_signature,
+    functional_subregion_config_path,
     qupath_command,
     read_checkpoint,
     read_project,
@@ -65,6 +67,12 @@ class AppCoreTests(unittest.TestCase):
             self.assertIn("hemisphereMode=left-right", arguments)
             self.assertIn("reuseDetections=true", arguments)
             self.assertIn("cellposeModel=cpsam_v2", arguments)
+            self.assertIn(
+                f"functionalSubregionConfigPath={functional_subregion_config_path()}",
+                arguments,
+            )
+            expected_hash = hashlib.sha256(functional_subregion_config_path().read_bytes()).hexdigest()
+            self.assertIn(f"functionalSubregionConfigSha256={expected_hash}", arguments)
 
     def test_arguments_reject_unknown_cellpose_model(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

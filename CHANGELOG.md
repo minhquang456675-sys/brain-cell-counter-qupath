@@ -2,6 +2,24 @@
 
 All user-visible releases follow semantic versioning.
 
+## 2.8.0 — 2026-09-24
+
+### Added
+
+- Added a versioned `config/functional_subregions_v1.json` mapping with 18
+  curated groups covering common cortical, hippocampal, amygdalar, striatal,
+  and hypothalamic subregions.
+- Analysis requests and regional CSV rows record the subregion configuration
+  schema and SHA-256 provenance. Editing the mapping changes the checkpoint
+  signature, preventing stale completed-entry reuse.
+
+### Changed
+
+- Functional-subregion matching now reads the external mapping and applies a
+  group to every Allen descendant of its declared root acronyms.
+- Regional output schema 2.4 adds `Functional_Subregion_Config` and rejects
+  missing, malformed, hash-mismatched, duplicate, or overlapping mappings.
+
 ## 2.7.0 — 2026-09-23
 
 ### Added
