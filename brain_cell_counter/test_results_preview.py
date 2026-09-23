@@ -7,6 +7,7 @@ import unittest
 from pathlib import Path
 
 from brain_cell_counter.results_preview import (
+    atlas_overlay_for_result,
     discover_regional_csvs,
     export_selected_columns,
     read_preview_csv,
@@ -95,6 +96,18 @@ class ResultsPreviewTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 export_selected_columns(source, source, ["Image"])
             self.assertEqual(source.read_text(encoding="utf-8"), "Image\nsection.tif\n")
+
+    def test_finds_only_the_version_matched_atlas_overlay(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            result = root / "section_regional_counts_v2.0.csv"
+            result.write_text("Image\nsection\n", encoding="utf-8")
+            older = root / "section_atlas_overlay_v1.2.png"
+            older.write_bytes(b"old")
+            self.assertIsNone(atlas_overlay_for_result(result))
+            expected = root / "section_atlas_overlay_v2.0.png"
+            expected.write_bytes(b"new")
+            self.assertEqual(atlas_overlay_for_result(result), expected)
 
 
 if __name__ == "__main__":

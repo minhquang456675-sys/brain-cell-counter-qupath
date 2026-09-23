@@ -48,6 +48,17 @@ def discover_regional_csvs(project_path: Path | None) -> list[Path]:
     )
 
 
+def atlas_overlay_for_result(result_path: Path) -> Path | None:
+    """Return the exact version-matched atlas overlay for a regional CSV."""
+    path = Path(result_path)
+    marker = "_regional_counts_"
+    if marker not in path.stem:
+        return None
+    image_prefix, version_suffix = path.stem.rsplit(marker, 1)
+    candidate = path.with_name(f"{image_prefix}_atlas_overlay_{version_suffix}.png")
+    return candidate if candidate.is_file() else None
+
+
 def read_preview_csv(path: Path, row_limit: int = 5000) -> tuple[list[str], list[dict[str, str]], bool]:
     """Read a bounded CSV preview and report whether additional rows were omitted."""
     with path.open("r", encoding="utf-8-sig", newline="") as stream:

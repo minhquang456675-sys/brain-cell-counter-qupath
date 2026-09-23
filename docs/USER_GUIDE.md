@@ -3,8 +3,8 @@
 ## Interface layout
 
 Version 2 opens the integrated PySide6/Qt interface by default. It adds rounded
-cards and controls, hover and pressed feedback, soft page transitions, subtle
-elevation, automatic monitor sizing, and a fixed workflow sidebar. Global
+cards and controls, hover and pressed feedback, stable immediate page switching,
+subtle elevation, automatic monitor sizing, and a fixed workflow sidebar. Global
 threshold optimization, Results Preview, project-link repair, and Cellpose
 parameter suggestion are available directly in this interface. **Open
 calibration** starts only the focused human-review wizard; it does not open the
@@ -34,7 +34,9 @@ The main window follows the scientific workflow:
   threshold lock, candidate ranges, plateau criteria, and the run button.
 - **4 RESULTS** loads regional CSV files and provides measurement presets.
   **Choose columns…** opens the complete checkbox list in a separate scrollable
-  Qt window so long column names do not widen the main application.
+  Qt window so long column names do not widen the main application. **Regional
+  table** and **Atlas overlay** tabs show the measurements and the exact
+  version-matched QC image without loading the full-resolution source TIFF.
 
 Closing the calibration or column-selection window does not modify the master
 result files. Threshold and analysis values remain visible in their pages and

@@ -2,6 +2,23 @@
 
 All user-visible releases follow semantic versioning.
 
+## 2.2.1 — 2026-09-23
+
+### Fixed
+
+- Removed the opacity page-transition effect that could leave complex Qt pages
+  blank or visually disappear after a sidebar click on Windows.
+- Results now loads lazily when the page is opened, avoids nested scroll areas,
+  uses fixed bounded table widths instead of measuring every cell, and limits
+  the on-screen preview while preserving full-row compact CSV export.
+- Unexpected Qt callback errors now create a visible diagnostic message and a
+  local runtime log instead of silently losing a screen.
+
+### Added
+
+- Results includes a bounded preview of the exact version-matched atlas overlay
+  alongside the regional table.
+
 ## 2.2.0 — 2026-09-22
 
 ### Added

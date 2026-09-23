@@ -6,12 +6,14 @@ choices never alter the complete scientific result file.
 
 from __future__ import annotations
 
+import csv
 from pathlib import Path
 from typing import Callable
 
-from PySide6.QtCore import Qt, QUrl
-from PySide6.QtGui import QDesktopServices
+from PySide6.QtCore import QSize, Qt, QUrl
+from PySide6.QtGui import QDesktopServices, QImageReader, QPixmap
 from PySide6.QtWidgets import (
+    QAbstractItemView,
     QCheckBox,
     QComboBox,
     QDialog,
@@ -22,6 +24,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QPushButton,
     QScrollArea,
+    QTabWidget,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
@@ -34,6 +37,7 @@ from .results_preview import (
     IDENTIFIER_COLUMNS,
     PERCENT_HINT,
     PHYSICAL_HINTS,
+    atlas_overlay_for_result,
     discover_regional_csvs,
     export_selected_columns,
     read_preview_csv,
@@ -57,6 +61,7 @@ class QtResultsWidget(QWidget):
         self.rows: list[dict[str, str]] = []
         self.visible: dict[str, bool] = {}
         self.busy = False
+        self.loaded_path: Path | None = None
 
         layout = QVBoxLayout(self)
         toolbar = QHBoxLayout()
@@ -95,20 +100,42 @@ class QtResultsWidget(QWidget):
         presets.addStretch()
         layout.addLayout(presets)
 
+        self.tabs = QTabWidget()
         self.table = QTableWidget()
-        self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.table.setAlternatingRowColors(True)
         self.table.setSortingEnabled(False)
-        layout.addWidget(self.table, 1)
+        self.table.setHorizontalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
+        self.table.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
+        self.tabs.addTab(self.table, "Regional table")
+
+        self.overlay_label = QLabel("No atlas overlay is available for the selected result.")
+        self.overlay_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.overlay_label.setMinimumSize(320, 220)
+        self.overlay_scroll = QScrollArea()
+        self.overlay_scroll.setWidgetResizable(False)
+        self.overlay_scroll.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.overlay_scroll.setWidget(self.overlay_label)
+        self.tabs.addTab(self.overlay_scroll, "Atlas overlay")
+        layout.addWidget(self.tabs, 1)
         self.status = QLabel("Run Analyze to create a regional CSV preview.")
         self.status.setProperty("muted", True)
         layout.addWidget(self.status)
         self._update_actions()
 
     def set_project(self, project_path: Path | None) -> None:
-        """Select the project whose result directory should be displayed."""
+        """Select a project without eagerly constructing a large result table."""
         self.project_path = project_path
-        self.refresh()
+        self.loaded_path = None
+        self.headers = []
+        self.rows = []
+        self.visible = {}
+        self.table.clear()
+        self.table.setRowCount(0)
+        self.table.setColumnCount(0)
+        self.overlay_label.setPixmap(QPixmap())
+        self.overlay_label.setText("Open Results to load the matching atlas overlay.")
+        self._discover_files()
 
     def set_busy(self, busy: bool) -> None:
         """Prevent desktop QuPath launch while a headless job owns the project."""
@@ -117,6 +144,18 @@ class QtResultsWidget(QWidget):
 
     def refresh(self) -> None:
         """Discover result files and retain the current choice when possible."""
+        self._discover_files()
+        if self.file_combo.count():
+            self._load_selected()
+
+    def ensure_loaded(self) -> None:
+        """Load the selected result once when the Results page becomes visible."""
+        selected = self.paths.get(self.file_combo.currentText())
+        if selected is not None and selected != self.loaded_path:
+            self._load_selected()
+
+    def _discover_files(self) -> None:
+        """Populate the lightweight result-file selector without parsing CSV rows."""
         current = self.file_combo.currentText()
         paths = discover_regional_csvs(self.project_path)
         self.paths = {path.name: path for path in paths}
@@ -126,16 +165,20 @@ class QtResultsWidget(QWidget):
         if current in self.paths:
             self.file_combo.setCurrentText(current)
         self.file_combo.blockSignals(False)
-        if self.file_combo.count():
-            self._load_selected()
-        else:
+        if not self.file_combo.count():
             self.headers = []
             self.rows = []
             self.visible = {}
+            self.loaded_path = None
             self.table.clear()
             self.table.setRowCount(0)
             self.table.setColumnCount(0)
+            self.overlay_label.setPixmap(QPixmap())
+            self.overlay_label.setText("No atlas overlay is available for this project.")
             self.status.setText("No regional CSV files were found for this project.")
+            self._update_actions()
+        else:
+            self.status.setText("Choose Results or press Refresh to load the selected regional CSV.")
             self._update_actions()
 
     def _load_selected(self, _name: str = "") -> None:
@@ -143,15 +186,40 @@ class QtResultsWidget(QWidget):
         if path is None:
             return
         try:
-            self.headers, self.rows, truncated = read_preview_csv(path)
-        except (OSError, ValueError) as exc:
+            self.headers, self.rows, truncated = read_preview_csv(path, row_limit=1500)
+        except (OSError, ValueError, csv.Error) as exc:
             QMessageBox.critical(self, "Results preview", f"Could not read the selected CSV:\n{exc}")
             return
+        self.loaded_path = path
         self.visible = {header: False for header in self.headers}
         self._apply_preset("essential")
-        suffix = "; preview limited to 5,000 rows" if truncated else ""
+        self._load_overlay(path)
+        suffix = "; preview limited to 1,500 rows" if truncated else ""
         self.status.setText(f"{len(self.rows):,} rows loaded from {path.name}{suffix}.")
         self._update_actions()
+
+    def _load_overlay(self, result_path: Path) -> None:
+        """Load a bounded preview of the exact version-matched atlas overlay."""
+        overlay = atlas_overlay_for_result(result_path)
+        self.overlay_label.setPixmap(QPixmap())
+        if overlay is None:
+            self.overlay_label.setText("No version-matched atlas overlay was found for this CSV.")
+            self.tabs.setTabText(1, "Atlas overlay — unavailable")
+            return
+        reader = QImageReader(str(overlay))
+        size = reader.size()
+        if size.isValid() and max(size.width(), size.height()) > 1600:
+            scale = 1600.0 / max(size.width(), size.height())
+            reader.setScaledSize(QSize(max(1, round(size.width() * scale)), max(1, round(size.height() * scale))))
+        image = reader.read()
+        if image.isNull():
+            self.overlay_label.setText(f"Could not decode atlas overlay:\n{reader.errorString()}")
+            self.tabs.setTabText(1, "Atlas overlay — image error")
+            return
+        self.overlay_label.setText("")
+        self.overlay_label.setPixmap(QPixmap.fromImage(image))
+        self.overlay_label.adjustSize()
+        self.tabs.setTabText(1, "Atlas overlay")
 
     def _selected_columns(self) -> list[str]:
         return [header for header in self.headers if self.visible.get(header, False)]
@@ -220,9 +288,16 @@ class QtResultsWidget(QWidget):
                 if any(token in column for token in ("Count", "Positive", "Area", "Density", "Percent", "Pixel_Size")):
                     item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
                 self.table.setItem(row_index, column_index, item)
-        self.table.resizeColumnsToContents()
-        for column_index in range(self.table.columnCount()):
-            self.table.setColumnWidth(column_index, min(self.table.columnWidth(column_index), 240))
+        for column_index, column in enumerate(columns):
+            if column == "Image":
+                width = 190
+            elif column in {"Region_Name", "Major_Group"}:
+                width = 210
+            elif column in {"Acronym", "Hemisphere"}:
+                width = 105
+            else:
+                width = 135
+            self.table.setColumnWidth(column_index, width)
         self.table.setUpdatesEnabled(True)
 
     def _export(self) -> None:

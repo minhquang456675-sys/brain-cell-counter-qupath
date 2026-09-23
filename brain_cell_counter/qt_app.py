@@ -13,10 +13,11 @@ import shutil
 import subprocess
 import sys
 import ctypes
+import traceback
 from datetime import datetime
 from pathlib import Path
 
-from PySide6.QtCore import QEasingCurve, QProcess, QPropertyAnimation, QTimer, Qt, QUrl
+from PySide6.QtCore import QProcess, QTimer, Qt, QUrl
 from PySide6.QtGui import QAction, QColor, QDesktopServices, QFont, QKeySequence
 from PySide6.QtWidgets import (
     QApplication,
@@ -69,6 +70,7 @@ ROOT = Path(__file__).resolve().parent.parent
 SETTINGS_FILE = ROOT / "brain_cell_counter_settings.json"
 DEFAULT_QUPATH = Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData" / "Local")) / "QuPath-0.7.0" / "QuPath-0.7.0 (console).exe"
 DEFAULT_CELLPOSE = Path.home() / "miniforge3" / "envs" / "cellpose" / "python.exe"
+RUNTIME_ERROR_FILE = ROOT / "brain_cell_counter_runtime_error.log"
 FIJI_CANDIDATES = (
     Path.home() / "Downloads" / "fiji-latest-win64-jdk" / "Fiji" / "fiji-windows-x64.exe",
     Path.home() / "Fiji.app" / "ImageJ-win64.exe",
@@ -639,7 +641,19 @@ class BrainCellCounterQt(QMainWindow):
         return page
 
     def _results_page(self) -> QWidget:
-        page, layout = self._scroll_page("Results", "Open versioned CSV and atlas-overlay outputs without modifying master files.")
+        # Results owns internal table and image scroll areas, so nesting it in
+        # another QScrollArea can shift or blank the page on Windows.
+        page = QWidget()
+        layout = QVBoxLayout(page)
+        layout.setContentsMargins(4, 4, 14, 16)
+        layout.setSpacing(14)
+        heading = QLabel("Results")
+        heading.setProperty("heading", True)
+        layout.addWidget(heading)
+        description = QLabel("Open versioned CSV and atlas-overlay outputs without modifying master files.")
+        description.setProperty("muted", True)
+        description.setWordWrap(True)
+        layout.addWidget(description)
         card, box = _card("Project results", "Choose columns, preview every Allen region, export a compact CSV, or inspect saved detections in QuPath.")
         self.results_widget = QtResultsWidget(self._open_result_in_qupath)
         box.addWidget(self.results_widget)
@@ -696,24 +710,14 @@ class BrainCellCounterQt(QMainWindow):
             self.addAction(action)
 
     def _show_page(self, index: int, animate: bool = True) -> None:
+        """Switch pages without opacity effects that can blank complex widgets."""
         self.pages.setCurrentIndex(index)
         for button_index, button in enumerate(self.nav_buttons):
             button.setProperty("selected", button_index == index)
             button.style().unpolish(button)
             button.style().polish(button)
-        if animate:
-            effect = self.pages.currentWidget().graphicsEffect()
-            if effect is None:
-                from PySide6.QtWidgets import QGraphicsOpacityEffect
-                effect = QGraphicsOpacityEffect(self.pages.currentWidget())
-                self.pages.currentWidget().setGraphicsEffect(effect)
-            animation = QPropertyAnimation(effect, b"opacity", self)
-            animation.setDuration(180)
-            animation.setStartValue(0.35)
-            animation.setEndValue(1.0)
-            animation.setEasingCurve(QEasingCurve.Type.OutCubic)
-            self._page_animation = animation
-            animation.start()
+        if index == 3:
+            QTimer.singleShot(0, self.results_widget.ensure_loaded)
 
     def _browse_project(self) -> None:
         path, _ = QFileDialog.getOpenFileName(self, "Choose QuPath project", str(self.settings.get("project", "")), "QuPath project (*.qpproj)")
@@ -737,7 +741,6 @@ class BrainCellCounterQt(QMainWindow):
         self.threshold_entry.addItems([entry.name for entry in self.summary.entries])
         self.results_widget.set_project(self.summary.path)
         self._save_settings()
-        self._refresh_results()
 
     def _collect_settings(self) -> None:
         for index, field in enumerate(self.name_fields, 1):
@@ -1457,6 +1460,8 @@ Calibration opens as a dedicated human-review window. Threshold optimization, co
 
     def _refresh_results(self) -> None:
         self.results_widget.set_project(self.summary.path if self.summary is not None else None)
+        if self.pages.currentIndex() == 3:
+            self.results_widget.ensure_loaded()
 
     def _open_results(self) -> None:
         if self.summary is None:
@@ -1483,6 +1488,22 @@ def main() -> None:
     app.setApplicationName("Brain Cell Counter")
     app.setStyle("Fusion")
     app.setStyleSheet(STYLE)
+
+    def report_runtime_exception(exception_type, exception, trace) -> None:
+        """Keep unexpected Qt callback failures visible and diagnosable."""
+        details = "".join(traceback.format_exception(exception_type, exception, trace))
+        try:
+            RUNTIME_ERROR_FILE.write_text(details, encoding="utf-8")
+        except OSError:
+            pass
+        QMessageBox.critical(
+            None,
+            "Brain Cell Counter interface error",
+            f"A screen could not be updated. The application will remain open.\n\n{exception}\n\n"
+            f"Diagnostic log: {RUNTIME_ERROR_FILE}",
+        )
+
+    sys.excepthook = report_runtime_exception
     window = BrainCellCounterQt()
     activate_main_window(window)
     QTimer.singleShot(250, lambda: activate_main_window(window))
