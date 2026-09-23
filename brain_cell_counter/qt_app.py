@@ -517,6 +517,8 @@ class BrainCellCounterQt(QMainWindow):
             button = _button(action)
             button.clicked.connect(callback)
             box.addWidget(button)
+            if callback == self._open_calibration:
+                self.calibration_button = button
             preparation.addWidget(frame, 1)
         layout.addLayout(preparation)
         layout.addStretch()
@@ -953,6 +955,9 @@ Calibration opens as a dedicated human-review window. Threshold optimization, co
         if self.process.state() != QProcess.ProcessState.NotRunning or self.threshold_process.state() != QProcess.ProcessState.NotRunning:
             QMessageBox.warning(self, "Calibration", "Wait for the active project operation to finish.")
             return
+        if self.calibration_process is not None and self.calibration_process.poll() is None:
+            QMessageBox.information(self, "Calibration", "The Calibration window is already open.")
+            return
         executable = Path(sys.executable).with_name("pythonw.exe")
         if not executable.is_file():
             executable = Path(sys.executable)
@@ -972,6 +977,7 @@ Calibration opens as a dedicated human-review window. Threshold optimization, co
         self.validate_button.setEnabled(False)
         self.analyze_button.setEnabled(False)
         self.threshold_run_button.setEnabled(False)
+        self.calibration_button.setEnabled(False)
         self.results_widget.set_busy(True)
         self.progress_label.setText("Calibration window is open")
         self.calibration_timer.start()
@@ -985,6 +991,7 @@ Calibration opens as a dedicated human-review window. Threshold optimization, co
         self.validate_button.setEnabled(True)
         self.analyze_button.setEnabled(True)
         self.threshold_run_button.setEnabled(True)
+        self.calibration_button.setEnabled(True)
         self.results_widget.set_busy(False)
         self.progress_label.setText("Calibration closed — run Preflight and Validate before analysis")
         if self.summary is not None:

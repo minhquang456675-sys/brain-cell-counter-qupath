@@ -43,12 +43,18 @@ class CalibrationWizard(tk.Toplevel):
         fiji_path: Path,
         project_path: Path,
         busy_callback,
+        *,
+        standalone: bool = False,
     ) -> None:
         super().__init__(parent)
         self.title("Batch image calibration — human review required")
         self.geometry("1180x760")
         self.minsize(940, 620)
-        self.transient(parent)
+        # The classic Tk application uses a transient child window.  The Qt
+        # launcher instead hides its small Tk owner, so making this window
+        # transient there would also keep Calibration invisible on Windows.
+        if not standalone:
+            self.transient(parent)
         self.qupath_path = qupath_path
         self.fiji_path = fiji_path
         self.project_path = project_path

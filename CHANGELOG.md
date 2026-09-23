@@ -2,6 +2,15 @@
 
 All user-visible releases follow semantic versioning.
 
+## 2.2.2 — 2026-09-23
+
+### Fixed
+
+- Calibration now opens as an independent visible window when launched from
+  the Qt interface instead of inheriting a hidden Tk owner on Windows.
+- Repeated clicks can no longer create multiple hidden Calibration processes;
+  both the Qt interface and the standalone runner enforce a single window.
+
 ## 2.2.1 — 2026-09-23
 
 ### Fixed
