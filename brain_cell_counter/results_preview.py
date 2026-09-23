@@ -21,6 +21,7 @@ IDENTIFIER_COLUMNS = {
     "Acronym",
     "Region_Name",
     "Major_Group",
+    "Functional_Subregion",
     "Hierarchy_Level",
     "Hemisphere",
 }
@@ -30,6 +31,7 @@ ESSENTIAL_IDENTIFIER_COLUMNS = {
     "Acronym",
     "Region_Name",
     "Major_Group",
+    "Functional_Subregion",
     "Hemisphere",
 }
 
@@ -384,7 +386,7 @@ class ResultsPreviewTab(ttk.Frame):
         self.table["columns"] = visible
         for header in visible:
             self.table.heading(header, text=header.replace("_", " "))
-            width = 170 if header in {"Image", "Region_Name", "Major_Group"} else 125
+            width = 170 if header in {"Image", "Region_Name", "Major_Group", "Functional_Subregion"} else 125
             self.table.column(header, width=width, minwidth=80, stretch=False, anchor="e" if self._numeric(header) else "w")
         for row in self.rows:
             self.table.insert("", "end", values=[row.get(header, "") for header in visible])

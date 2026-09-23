@@ -111,7 +111,7 @@ selected hemisphere mode.
 After each successful entry, ANALYZE updates:
 
 ```text
-<QuPath project>/brain_cell_counter_results/batch_checkpoint_v2.2.json
+<QuPath project>/brain_cell_counter_results/batch_checkpoint_v2.3.json
 ```
 
 The application can skip completed entries only when the project and exact
@@ -138,8 +138,8 @@ endpoint coordinates, metadata calibration, and all internal record fields.
 For every successful entry:
 
 ```text
-<QuPath project>/brain_cell_counter_results/<image>_regional_counts_v2.2.csv
-<QuPath project>/brain_cell_counter_results/<image>_atlas_overlay_v2.2.png
+<QuPath project>/brain_cell_counter_results/<image>_regional_counts_v2.3.csv
+<QuPath project>/brain_cell_counter_results/<image>_atlas_overlay_v2.3.png
 ```
 
 The overlay is approximately 3200 pixels and contains the source fluorescence
@@ -158,6 +158,11 @@ Level-5 Allen divisions are used for gray-matter regions, and Hippocampal
 formation (`HPF`) is reported as `Hippocampus` so its descendants can be
 summarized together.
 
+`Functional_Subregion` is a separate curated grouping and never replaces the
+Allen identifiers. Schema 2.3 defines `mPFC` as every node whose Allen ancestor
+path contains `ACA`, `PL`, or `ILA`. `ORBm` and `MOs` are excluded by default
+because their inclusion in rodent mPFC varies between anatomical conventions.
+
 The engine also reports every Allen leaf region, including zero-count regions.
 When image calibration is valid it appends region area in mm², densities per
 mm², and marker-positive percentages. Physical fields are blank when
@@ -168,6 +173,6 @@ write an additional `_selected.csv` containing only the columns chosen by the
 user. Compact export reads every source row and never rewrites the master file.
 
 The selected Cellpose model is part of the analysis arguments and checkpoint
-signature. New detections record `cpsam` or `cpsam_v2` in output schema 2.2.
+signature. New detections record `cpsam` or `cpsam_v2` in output schema 2.3.
 Legacy detections that are reused are labelled as an unknown model because the
 older QuPath entries did not store model provenance.

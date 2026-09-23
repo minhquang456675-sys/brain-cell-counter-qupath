@@ -2,6 +2,23 @@
 
 All user-visible releases follow semantic versioning.
 
+## 2.7.0 — 2026-09-23
+
+### Added
+
+- Regional CSV output now includes `Functional_Subregion`. The first curated
+  grouping is `mPFC`, conservatively defined as Allen `ACA`, `PL`, and `ILA`
+  plus all descendants and cortical layers.
+- Results Preview treats `Functional_Subregion` as an essential identifier so
+  it is visible and available in compact exports by default.
+
+### Changed
+
+- Regional output schema 2.3 records functional groupings separately from the
+  unchanged Allen acronym, region name, hierarchy level, and major group.
+- `ORBm` and `MOs` are intentionally excluded from the default mPFC grouping
+  because their inclusion varies across anatomical conventions.
+
 ## 2.6.0 — 2026-09-23
 
 ### Added

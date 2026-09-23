@@ -8,6 +8,7 @@ from pathlib import Path
 
 from brain_cell_counter.results_preview import (
     COUNT_HINTS,
+    ESSENTIAL_IDENTIFIER_COLUMNS,
     atlas_overlay_for_result,
     discover_regional_csvs,
     export_selected_columns,
@@ -17,6 +18,9 @@ from brain_cell_counter.results_preview import (
 
 
 class ResultsPreviewTests(unittest.TestCase):
+    def test_functional_subregion_is_an_essential_identifier(self) -> None:
+        self.assertIn("Functional_Subregion", ESSENTIAL_IDENTIFIER_COLUMNS)
+
     def test_count_presets_include_named_coexpression_columns(self) -> None:
         self.assertTrue(any(hint in "cFOS+NeuN" for hint in COUNT_HINTS))
 

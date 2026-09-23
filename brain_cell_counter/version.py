@@ -1,5 +1,5 @@
 """Single source of truth for the application release version."""
 
-APP_VERSION = "2.6.0"
+APP_VERSION = "2.7.0"
 APP_VERSION_LABEL = f"v{APP_VERSION}"
-OUTPUT_SCHEMA_VERSION = "2.2"
+OUTPUT_SCHEMA_VERSION = "2.3"

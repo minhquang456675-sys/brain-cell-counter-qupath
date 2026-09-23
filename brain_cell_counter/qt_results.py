@@ -291,7 +291,7 @@ class QtResultsWidget(QWidget):
         for column_index, column in enumerate(columns):
             if column == "Image":
                 width = 190
-            elif column in {"Region_Name", "Major_Group"}:
+            elif column in {"Region_Name", "Major_Group", "Functional_Subregion"}:
                 width = 210
             elif column in {"Acronym", "Hemisphere"}:
                 width = 105

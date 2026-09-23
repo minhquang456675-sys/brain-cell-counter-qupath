@@ -36,6 +36,13 @@ class EngineSourceRegressionTests(unittest.TestCase):
         self.assertIn("Cellpose_Model", self.engine)
         self.assertNotIn("Cellpose2D.builder('cpsam')", self.engine)
 
+    def test_engine_exports_curated_mpfc_functional_subregion(self) -> None:
+        """Keep the declared mPFC definition explicit and ancestor-aware."""
+        self.assertIn("Functional_Subregion", self.engine)
+        self.assertIn("mPFC: ['ACA', 'PL', 'ILA'] as Set", self.engine)
+        self.assertIn("ontologyPath.collect", self.engine)
+        self.assertIn("row.functionalSubregion", self.engine)
+
 
 if __name__ == "__main__":
     unittest.main()

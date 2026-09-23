@@ -1,4 +1,4 @@
-// Brain Cell Counter v2.6.0 - headless QuPath analysis engine
+// Brain Cell Counter v2.7.0 - headless QuPath analysis engine
 //
 // This script is launched by the Python v2 GUI. It expects ABBA atlas
 // registration files to have already been exported into the QuPath entry.
@@ -256,6 +256,13 @@ def leafRegions = atlasAnnotations.findAll { annotation ->
 }
 
 def ontologyById = [:]
+// Curated functional groupings complement the Allen ontology without changing
+// its native region names. mPFC is conservatively defined as ACA, PL, and ILA
+// plus all their descendants; disputed additions such as ORBm and MOs are not
+// included unless a future, explicitly versioned mapping adds them.
+def functionalSubregionRoots = [
+        mPFC: ['ACA', 'PL', 'ILA'] as Set
+]
 def project = getProject()
 def ontologyFile = null
 if (project != null) {
@@ -283,12 +290,17 @@ if (project != null) {
             }
             String majorGroup = majorNode?.acronym == 'HPF' ? 'Hippocampus' :
                     (majorNode?.name ?: 'Unclassified')
+            Set<String> ontologyAcronyms = ontologyPath.collect { it.acronym?.toString() }.findAll { it } as Set
+            String functionalSubregion = functionalSubregionRoots.find { groupName, rootAcronyms ->
+                !ontologyAcronyms.intersect(rootAcronyms as Set).isEmpty()
+            }?.key ?: ''
             if (id != null) {
                 ontologyById[id] = [
                         acronym  : currentNode.acronym,
                         name     : currentNode.name,
                         level    : currentNode.level,
-                        majorGroup: majorGroup
+                        majorGroup: majorGroup,
+                        functionalSubregion: functionalSubregion
                 ]
             }
             node.children?.each { visitOntology(it, ontologyPath) }
@@ -314,7 +326,7 @@ boolean atlasReady = namedAtlasRoot != null && !leafRegions.isEmpty() && ontolog
         ontologyMatchedLeafIds > 0
 
 def validation = [
-        version             : '2.6.0',
+        version             : '2.7.0',
         image               : imageName,
         channels            : channelCount,
         annotations         : annotations.size(),
@@ -327,6 +339,7 @@ def validation = [
         ontologyFound       : ontologyFile != null,
         ontologyEntries     : ontologyById.size(),
         majorGroups         : ontologyById.values().collect { it.majorGroup }.findAll { it }.unique().sort(),
+        functionalSubregions: ontologyById.values().collect { it.functionalSubregion }.findAll { it }.unique().sort(),
         ontologyMatchedLeaves: ontologyMatchedLeafIds,
         atlasReady           : atlasReady,
         atlasImportAttempted : atlasImportAttempted,
@@ -505,7 +518,7 @@ if (mode == 'cellpose-calibrate') {
     }
 
     def calibration = [
-            version: '2.6.0',
+            version: '2.7.0',
             cellposeModel: cellposeModel,
             mode: 'cellpose-calibrate',
             image: imageName,
@@ -677,7 +690,7 @@ if (mode == 'threshold-profile') {
         event('progress', [percent: 96, stage: "Calculating ${pairKeys.join(' + ')} double-positive threshold grid"])
 
     def profile = [
-            version             : '2.6.0',
+            version             : '2.7.0',
             cellposeModel       : cellposeModel,
             mode                : 'threshold-profile',
             image               : imageName,
@@ -883,13 +896,15 @@ def ensureRegionRow = { String regionId, String hemisphere ->
                 acronym: regionId,
                 name: regionId,
                 level: '',
-                majorGroup: 'Unclassified'
+                majorGroup: 'Unclassified',
+                functionalSubregion: ''
         ]
         rows[key] = [
                 regionId: regionId,
                 acronym: ontology.acronym,
                 regionName: ontology.name,
                 majorGroup: ontology.majorGroup,
+                functionalSubregion: ontology.functionalSubregion ?: '',
                 hierarchyLevel: ontology.level,
                 hemisphere: hemisphere,
                 regionAreaMm2: physicalCalibrationValid ? 0.0 : null,
@@ -996,7 +1011,7 @@ def outputDirectory = project.getPath().getParent().resolve('brain_cell_counter_
 event('progress', [percent: 94, stage: 'Writing regional CSV'])
 Files.createDirectories(outputDirectory)
 String safeImageName = imageName.replaceAll('[^A-Za-z0-9._-]+', '_')
-def outputFile = outputDirectory.resolve("${safeImageName}_regional_counts_v2.2.csv").toFile()
+def outputFile = outputDirectory.resolve("${safeImageName}_regional_counts_v2.3.csv").toFile()
 outputFile.withWriter('UTF-8') { writer ->
     writer.write('\uFEFF')
     String channel1Header = csvHeaderName(channel1Name)
@@ -1004,7 +1019,7 @@ outputFile.withWriter('UTF-8') { writer ->
     String channel3Header = csvHeaderName(channel3Name)
     String doublePositiveHeader = "${channel1Header}+${channel2Header}"
     String triplePositiveHeader = "${channel3Header}+${channel1Header}+${channel2Header}"
-    writer.writeLine("Image,Region_ID,Acronym,Region_Name,Major_Group,Hierarchy_Level,Hemisphere,${channel3Header},${channel1Header}_Positive,${channel2Header}_Positive,${doublePositiveHeader},${triplePositiveHeader},Activated_${channel1Header}_Percent," +
+    writer.writeLine("Image,Region_ID,Acronym,Region_Name,Major_Group,Functional_Subregion,Hierarchy_Level,Hemisphere,${channel3Header},${channel1Header}_Positive,${channel2Header}_Positive,${doublePositiveHeader},${triplePositiveHeader},Activated_${channel1Header}_Percent," +
             "Pixel_Size_X_um,Pixel_Size_Y_um,Region_Area_mm2,${channel3Header}_Density_per_mm2,${channel1Header}_Positive_Density_per_mm2,${channel2Header}_Positive_Density_per_mm2,${doublePositiveHeader}_Density_per_mm2,${triplePositiveHeader}_Density_per_mm2," +
             "${channel1Header}_Positive_Percent_of_${channel3Header},${channel2Header}_Positive_Percent_of_${channel3Header},${triplePositiveHeader}_Percent_of_${channel1Header},${triplePositiveHeader}_Percent_of_${channel2Header},Cellpose_Model")
     rows.values().sort { a, b ->
@@ -1012,7 +1027,7 @@ outputFile.withWriter('UTF-8') { writer ->
     }.each { row ->
         String percent = formatMetric(percentage(row.triple as int, row.neun as int), 4)
         writer.writeLine([
-                imageName, row.regionId, row.acronym, row.regionName, row.majorGroup, row.hierarchyLevel,
+                imageName, row.regionId, row.acronym, row.regionName, row.majorGroup, row.functionalSubregion, row.hierarchyLevel,
                 row.hemisphere, row.dapi, row.neun, row.cfos, row.doublePositive, row.triple, percent,
                 physicalCalibrationValid ? formatMetric(pixelWidthMicrons, 6) : '',
                 physicalCalibrationValid ? formatMetric(pixelHeightMicrons, 6) : '',
@@ -1146,13 +1161,13 @@ try {
     graphics.dispose()
 }
 
-def atlasOutputFile = outputDirectory.resolve("${safeImageName}_atlas_overlay_v2.2.png").toFile()
+def atlasOutputFile = outputDirectory.resolve("${safeImageName}_atlas_overlay_v2.3.png").toFile()
 if (!ImageIO.write(atlasImage, 'PNG', atlasOutputFile))
     fail('No PNG image writer is available for the atlas overlay.')
 event('progress', [percent: 98, stage: 'Atlas overlay PNG complete'])
 
 def summary = [
-        version: '2.6.0',
+        version: '2.7.0',
         image: imageName,
         detectionSource: reused ? 'reused' : 'cellpose',
         cellposeModel: detectionModelLabel,

@@ -100,15 +100,15 @@ at least 3 consecutive stable threshold steps
 The optimizer writes:
 
 ```text
-global_threshold_optimization_v2.2.csv
-global_threshold_optimization_v2.2.json
-global_threshold_optimization_v2.2.html
+global_threshold_optimization_v2.3.csv
+global_threshold_optimization_v2.3.json
+global_threshold_optimization_v2.3.html
 ```
 
 Pair objectives also write:
 
 ```text
-channel_pair_double_positive_optimization_v2.2.csv
+channel_pair_double_positive_optimization_v2.3.csv
 ```
 
 Reports include total counts, per-section counts, percentage changes,
@@ -134,6 +134,16 @@ the segmentation population and therefore requires representative-ROI mask
 review before a batch. Existing detections are never claimed to have been
 created by a newly selected model. Intensity classification remains based on
 measurements from the original image, not restored or synthesized pixels.
+
+## Curated functional subregions
+
+Allen atlas names and IDs remain the primary anatomical result. The optional
+`Functional_Subregion` column adds a transparent analysis grouping without
+renaming or merging the Allen rows. In schema 2.3, `mPFC` contains `ACA`, `PL`,
+and `ILA` and all their ontology descendants. `ORBm` and `MOs` are not included
+by default because the literature does not use one universal rodent mPFC
+boundary. Any future grouping change requires a new version and biological
+review before datasets are combined.
 
 ## GPU validation baseline
 

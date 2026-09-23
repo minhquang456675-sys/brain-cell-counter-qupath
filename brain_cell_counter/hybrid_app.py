@@ -1172,7 +1172,7 @@ AutomaticSplit = the T that maximizes OtsuScore(T)
 SeparabilityScore = maximum between-class variance / total intensity variance
 
 OUTPUTS
-Each analyzed entry produces a regional-count CSV and a high-resolution atlas-overlay PNG. CSV rows contain Allen region information, hemisphere, Major Group, areas, detection totals, positive-class totals, and densities. Threshold optimization additionally produces CSV, JSON, and HTML audit reports, including the selected pair matrix when pair mode is used.
+Each analyzed entry produces a regional-count CSV and a high-resolution atlas-overlay PNG. CSV rows contain Allen region information, hemisphere, Major Group, curated Functional Subregion, areas, detection totals, positive-class totals, and densities. In schema 2.3, mPFC means ACA, PL, and ILA plus their descendants; Allen names remain unchanged. Threshold optimization additionally produces CSV, JSON, and HTML audit reports, including the selected pair matrix when pair mode is used.
 
 RESULT INSPECTION IN QUPATH
 In RESULTS, choose a regional CSV and click OPEN IN QUPATH. The application reads the exact image-entry name from the CSV and opens that saved entry in the normal QuPath desktop viewer. The button is unavailable during headless project operations. Close QuPath before starting another operation that writes the project.
