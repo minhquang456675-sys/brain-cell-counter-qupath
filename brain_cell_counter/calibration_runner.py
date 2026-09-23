@@ -11,10 +11,8 @@ import argparse
 import ctypes
 import os
 from pathlib import Path
-import tkinter as tk
-from tkinter import messagebox
 
-from .calibration_wizard import CalibrationWizard
+from .qt_calibration import run_calibration_window
 
 
 _MUTEX_NAME = "Local\\BrainCellCounterCalibrationWindow"
@@ -54,36 +52,16 @@ def main() -> None:
 
     mutex = _acquire_windows_mutex()
     if mutex is None:
-        duplicate_root = tk.Tk()
-        duplicate_root.withdraw()
-        messagebox.showinfo("Calibration", "The Calibration window is already open.", parent=duplicate_root)
-        duplicate_root.destroy()
+        if os.name == "nt":
+            ctypes.windll.user32.MessageBoxW(0, "The Calibration window is already open.", "Calibration", 0x40)
         return
-
-    root = tk.Tk()
-    root.withdraw()
     try:
-        wizard = CalibrationWizard(
-            root,
+        run_calibration_window(
             Path(arguments.qupath),
             Path(arguments.fiji) if arguments.fiji else Path(),
             Path(arguments.project),
-            lambda _running: None,
-            standalone=True,
         )
-        # An empty wm_transient value explicitly detaches the hidden owner.
-        # Passing None only queries the existing owner in Tkinter.
-        wizard.wm_transient("")
-        wizard.update_idletasks()
-        wizard.deiconify()
-        wizard.state("normal")
-        wizard.lift()
-        wizard.attributes("-topmost", True)
-        wizard.after(300, lambda: wizard.attributes("-topmost", False))
-        wizard.focus_force()
-        root.wait_window(wizard)
     finally:
-        root.destroy()
         _release_windows_mutex(mutex)
 
 

@@ -1,4 +1,4 @@
-# Brain Cell Counter v2.3.0
+# Brain Cell Counter v2.4.0
 
 Brain Cell Counter is a Windows workflow for object-based fluorescent
 brain-cell counting by Allen brain region. It coordinates ABBA/DeepSlice
@@ -8,8 +8,8 @@ Version 2 uses one integrated PySide6/Qt interface with rounded controls,
 hover/pressed feedback, stable immediate page switching, and automatic monitor sizing.
 Threshold optimization, result preview/export, project-link repair, and
 Cellpose parameter suggestion run directly in this interface. Calibration
-opens a focused, visually matched human-review workspace with live batch
-status; it no longer opens the classic application shell.
+opens a native PySide6 human-review workspace that shares the main app's
+ChatGPT-inspired visual system and live batch status.
 
 ```text
 ABBA -> DeepSlice Local -> QuPath project -> Brain Cell Counter
@@ -92,7 +92,7 @@ See [Scientific method and validation](docs/SCIENTIFIC_METHOD.md).
 
 ## Versioning
 
-The current application release is **v2.3.0**. Patch versions are increased
+The current application release is **v2.4.0**. Patch versions are increased
 for fixes, minor versions for backward-compatible features, and major versions
 for incompatible workflow changes. Some launcher and engine source filenames
 retain `v1.0` for compatibility with existing shortcuts; the application

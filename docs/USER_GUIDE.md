@@ -7,9 +7,9 @@ cards and controls, hover and pressed feedback, stable immediate page switching,
 subtle elevation, automatic monitor sizing, and a fixed workflow sidebar. Global
 threshold optimization, Results Preview, project-link repair, and Cellpose
 parameter suggestion are available directly in this interface. **Open
-calibration** starts a focused three-step human-review workspace with live
-Images, Scanned, Confirmed, and Project matched metrics; it does not open the
-classic application shell.
+calibration** starts a native PySide6 three-step human-review workspace with
+the same ChatGPT-inspired styling and live Images, Scanned, Confirmed, and
+Project matched metrics; it does not open the classic application shell.
 
 The current project bar stays visible across the application and reports the
 project name, entry count, selected image, and ABBA readiness.

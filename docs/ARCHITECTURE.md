@@ -8,11 +8,12 @@
 | Shared application core | `brain_cell_counter/app_core.py` | Toolkit-independent project parsing, parameter validation, and QuPath command construction. |
 | Qt GUI | `brain_cell_counter/qt_app.py` | Integrated interface and sequential validation, analysis, atlas-import, threshold, preflight, and Cellpose-suggestion queues. |
 | Qt results | `brain_cell_counter/qt_results.py` | Lazy bounded table and atlas-overlay preview, column presets, compact export, and exact-entry QuPath launch. |
-| Calibration runner | `brain_cell_counter/calibration_runner.py` | Opens only the human-reviewed calibration wizard in an isolated event loop. |
+| Calibration runner | `brain_cell_counter/calibration_runner.py` | Opens only the native Qt calibration workspace in an isolated event loop. |
 | Classic GUI | `brain_cell_counter/hybrid_app.py` | Explicit recovery interface retained for compatibility; it is not opened by the standard workflow. |
 | Threshold optimizer | `brain_cell_counter/threshold_optimizer.py` | Dataset-level threshold calculations and CSV, JSON, and HTML reports. |
 | Calibration model | `brain_cell_counter/calibration.py` | Scale-bar endpoint proposals, physical-unit conversion, project matching, manifests, and backups. |
-| Calibration wizard | `brain_cell_counter/calibration_wizard.py` | Dedicated three-step light workspace for sequential multi-image preview generation, human review, and confirmed QuPath metadata writes. |
+| Qt calibration | `brain_cell_counter/qt_calibration.py` | Native three-step workspace for sequential preview generation, scale-bar review, Fiji export, and confirmed QuPath metadata writes. |
+| Classic calibration wizard | `brain_cell_counter/calibration_wizard.py` | Tk recovery implementation retained for the explicit classic interface. |
 | Fiji calibration exporter | `qupath_scripts/Brain_Cell_Counter_Fiji_Calibration_v1.0.groovy` | Writes a new calibrated OME-TIFF through Bio-Formats and verifies geometry, channels, bit depth, and physical pixel size. |
 | Results preview | `brain_cell_counter/results_preview.py` | Discovers regional CSV outputs, defaults to essential columns, exports user-selected compact CSVs, and opens the exact saved image entry in the QuPath desktop viewer. |
 | QuPath engine | `qupath_scripts/Brain_Cell_Counter_QuPath_Engine_v1.0.groovy` | Cellpose execution/reuse, measurement, classification, Allen-region assignment, QuPath save, and export. |

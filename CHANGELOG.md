@@ -2,6 +2,19 @@
 
 All user-visible releases follow semantic versioning.
 
+## 2.4.0 — 2026-09-23
+
+### Changed
+
+- Replaced the default legacy Tk Calibration window with a native PySide6
+  workspace using the same flat controls, rounded cards, typography, spacing,
+  palette, table behavior, and responsive sizing as the main application.
+- Rebuilt scale-bar review as a native Qt dialog with click-to-redraw
+  endpoints, live physical-pixel-size feedback, and the existing manual
+  confirmation and metadata-conflict safeguards.
+- Disabled Calibration actions now have an unambiguous muted appearance, and
+  the window fits inside the available Windows desktop area.
+
 ## 2.3.0 — 2026-09-23
 
 ### Added
