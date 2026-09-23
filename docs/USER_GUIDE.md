@@ -10,6 +10,8 @@ parameter suggestion are available directly in this interface. **Open
 calibration** starts a native PySide6 three-step human-review workspace with
 the same ChatGPT-inspired styling and live Images, Scanned, Confirmed, and
 Project matched metrics; it does not open the classic application shell.
+Existing records are restored from the calibration JSON audit, and accessible
+images from the selected QuPath project are listed automatically on opening.
 
 The current project bar stays visible across the application and reports the
 project name, entry count, selected image, and ABBA readiness.

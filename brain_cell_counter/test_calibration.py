@@ -16,6 +16,7 @@ from brain_cell_counter.calibration import (
     detect_scale_bar,
     match_records_to_project,
     next_fiji_output_path,
+    read_calibration_audit,
     valid_confirmed_fiji_records,
     valid_confirmed_records,
     write_calibration_audit,
@@ -150,6 +151,12 @@ class CalibrationTests(unittest.TestCase):
             payload = json.loads(output.read_text(encoding="utf-8"))
             self.assertEqual(payload["schemaVersion"], "1.2")
             self.assertEqual(payload["records"][0]["bar_start_x"], 12)
+
+            restored = read_calibration_audit(output)
+            self.assertEqual(len(restored), 1)
+            self.assertEqual(restored[0].source_path, "section.tif")
+            self.assertEqual(restored[0].bar_start_x, 12)
+            self.assertTrue(restored[0].confirmed)
 
 
 if __name__ == "__main__":

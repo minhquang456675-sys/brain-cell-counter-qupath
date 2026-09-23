@@ -48,6 +48,7 @@ from .calibration import (
     is_supported_image,
     match_records_to_project,
     next_fiji_output_path,
+    read_calibration_audit,
     read_project_source_entries,
     valid_confirmed_fiji_records,
     valid_confirmed_records,
@@ -351,6 +352,19 @@ class QtCalibrationWindow(QMainWindow):
         self.resize(1280, 860)
         self.setMinimumSize(980, 680)
         self._build_ui()
+        self._restore_session()
+
+    def _restore_session(self) -> None:
+        """Load the prior audit and ensure every current project image is listed."""
+        try:
+            self.records = read_calibration_audit(self._audit_path())
+        except (OSError, ValueError, TypeError, json.JSONDecodeError) as exc:
+            self.records = []
+            self._append_log(f"Existing calibration audit could not be restored: {exc}")
+        restored = len(self.records)
+        self._add_project_images()
+        if restored:
+            self._append_log(f"Restored {restored} record(s) from the previous calibration audit.")
 
     def _build_ui(self) -> None:
         workspace = QWidget()
@@ -358,7 +372,7 @@ class QtCalibrationWindow(QMainWindow):
         self.setCentralWidget(workspace)
         root = QVBoxLayout(workspace)
         root.setContentsMargins(28, 24, 28, 22)
-        root.setSpacing(16)
+        root.setSpacing(12)
         header = QHBoxLayout()
         titles = QVBoxLayout()
         heading = QLabel("Calibration")
@@ -380,13 +394,19 @@ class QtCalibrationWindow(QMainWindow):
             ("3  Export or apply", "Create verified copies or backed-up metadata."),
         ):
             card, layout = _card(title, description)
+            card.setFixedHeight(82)
             steps.addWidget(card, 1)
         root.addLayout(steps)
 
         metrics = QHBoxLayout()
         self.metric_labels: dict[str, QLabel] = {}
         for key, title in (("images", "Images"), ("scanned", "Scanned"), ("confirmed", "Confirmed"), ("matched", "Project matched")):
-            card, layout = _card("")
+            card = QFrame()
+            card.setProperty("card", True)
+            card.setFixedHeight(78)
+            layout = QVBoxLayout(card)
+            layout.setContentsMargins(16, 10, 16, 10)
+            layout.setSpacing(1)
             value = QLabel("0")
             value.setProperty("metric", True)
             layout.addWidget(value)
@@ -421,6 +441,7 @@ class QtCalibrationWindow(QMainWindow):
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         self.table.setAlternatingRowColors(True)
+        self.table.setMinimumHeight(190)
         self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.table.verticalHeader().setVisible(False)
         self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
@@ -463,7 +484,7 @@ class QtCalibrationWindow(QMainWindow):
         activity_layout.addWidget(self.progress)
         self.log = QPlainTextEdit()
         self.log.setReadOnly(True)
-        self.log.setMaximumHeight(112)
+        self.log.setMaximumHeight(70)
         self.log.setPlaceholderText("Calibration events will appear here.")
         activity_layout.addWidget(self.log)
         root.addWidget(activity)
@@ -494,19 +515,19 @@ class QtCalibrationWindow(QMainWindow):
 
     def _add_paths(self, paths: list[Path]) -> None:
         existing = {str(Path(record.source_path).resolve()).casefold() for record in self.records}
-        added = 0
+        additions: list[CalibrationRecord] = []
         for path in paths:
             if not is_supported_image(path):
                 continue
             resolved = str(path.resolve()).casefold()
             if resolved in existing:
                 continue
-            self.records.append(CalibrationRecord(source_path=str(path.resolve())))
+            additions.append(CalibrationRecord(source_path=str(path.resolve())))
             existing.add(resolved)
-            added += 1
-        match_records_to_project(self.records, self.project_path)
+        match_records_to_project(additions, self.project_path)
+        self.records.extend(additions)
         self._refresh_table()
-        self._append_log(f"Added {added} image(s). Total: {len(self.records)}.")
+        self._append_log(f"Added {len(additions)} image(s). Total: {len(self.records)}.")
 
     def _add_files(self) -> None:
         paths, _filter = QFileDialog.getOpenFileNames(self, "Add stitched images", "", "Microscopy images (*.tif *.tiff *.png *.jpg *.jpeg);;All files (*)")

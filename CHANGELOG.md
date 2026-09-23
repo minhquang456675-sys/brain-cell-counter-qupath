@@ -2,6 +2,16 @@
 
 All user-visible releases follow semantic versioning.
 
+## 2.4.1 — 2026-09-23
+
+### Fixed
+
+- Calibration now restores complete records from
+  `calibration_audit_v1.2.json` and automatically lists all accessible images
+  in the selected QuPath project when the window opens.
+- Previously confirmed, applied, and Fiji-verified states are visible across
+  sessions instead of returning to an empty table.
+
 ## 2.4.0 — 2026-09-23
 
 ### Changed

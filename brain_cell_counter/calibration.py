@@ -9,7 +9,7 @@ from __future__ import annotations
 import csv
 import json
 import math
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, fields
 from datetime import datetime
 from pathlib import Path
 from urllib.parse import unquote, urlparse
@@ -337,6 +337,24 @@ def write_calibration_audit(records: list[CalibrationRecord], output_path: Path)
     }
     output_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
     return output_path
+
+
+def read_calibration_audit(input_path: Path) -> list[CalibrationRecord]:
+    """Restore complete records from a compatible calibration JSON audit."""
+    if not input_path.is_file():
+        return []
+    payload = json.loads(input_path.read_text(encoding="utf-8"))
+    raw_records = payload.get("records", []) if isinstance(payload, dict) else []
+    if not isinstance(raw_records, list):
+        raise ValueError("Calibration audit records must be a list.")
+    allowed = {field.name for field in fields(CalibrationRecord)}
+    records: list[CalibrationRecord] = []
+    for raw in raw_records:
+        if not isinstance(raw, dict) or not isinstance(raw.get("source_path"), str):
+            continue
+        values = {key: value for key, value in raw.items() if key in allowed}
+        records.append(CalibrationRecord(**values))
+    return records
 
 
 def backup_project_calibration_targets(
