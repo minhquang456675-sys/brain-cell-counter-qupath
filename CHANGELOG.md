@@ -2,6 +2,13 @@
 
 All user-visible releases follow semantic versioning.
 
+## 2.5.1 — 2026-09-23
+
+### Fixed
+
+- Replaced the native Windows scrollbars in the main and Calibration Qt
+  interfaces with compact rounded tracks, hover feedback, and no arrow buttons.
+
 ## 2.5.0 — 2026-09-23
 
 ### Changed

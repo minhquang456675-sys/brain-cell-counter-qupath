@@ -85,6 +85,16 @@ QHeaderView::section { background: #F7F7F8; color: #343541; border: 0; border-bo
 QProgressBar { border: 0; border-radius: 4px; background: #ECECEF; height: 8px; color: transparent; }
 QProgressBar::chunk { border-radius: 4px; background: #10A37F; }
 QScrollArea { border: 0; background: transparent; }
+QScrollBar:vertical { background: transparent; width: 12px; margin: 4px 2px; }
+QScrollBar::handle:vertical { background: #C7C7CC; min-height: 42px; border-radius: 4px; }
+QScrollBar::handle:vertical:hover { background: #9B9BA1; }
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; border: 0; background: transparent; }
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical { background: transparent; }
+QScrollBar:horizontal { background: transparent; height: 12px; margin: 2px 4px; }
+QScrollBar::handle:horizontal { background: #C7C7CC; min-width: 42px; border-radius: 4px; }
+QScrollBar::handle:horizontal:hover { background: #9B9BA1; }
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal { width: 0; border: 0; background: transparent; }
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal { background: transparent; }
 """
 
 

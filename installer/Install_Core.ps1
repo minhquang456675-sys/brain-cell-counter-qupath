@@ -30,7 +30,7 @@ function New-Shortcut {
 }
 
 try {
-    Write-Host "Brain Cell Counter v2.5.0 - Core Installer" -ForegroundColor Cyan
+    Write-Host "Brain Cell Counter v2.5.1 - Core Installer" -ForegroundColor Cyan
     Write-Host "Destination: $InstallRoot"
     if (-not [Environment]::Is64BitOperatingSystem) {
         throw "64-bit Windows is required."
@@ -60,7 +60,7 @@ pause
 exit /b 1
 :launch
 cd /d "%BCC_ROOT%"
-start "Brain Cell Counter v2.5.0" "%BCC_PYTHON%" "%BCC_ROOT%\run_brain_cell_counter_v1.0.py"
+start "Brain Cell Counter v2.5.1" "%BCC_PYTHON%" "%BCC_ROOT%\run_brain_cell_counter_v1.0.py"
 '@
     Set-Content -LiteralPath $launcher -Value $launcherContent -Encoding ASCII
 
@@ -79,7 +79,7 @@ start "Brain Cell Counter v2.5.0" "%BCC_PYTHON%" "%BCC_ROOT%\run_brain_cell_coun
 
     Write-Host ""
     Write-Host "Core installation completed." -ForegroundColor Green
-    Write-Host "Desktop shortcut: Brain Cell Counter (v2.5.0)"
+    Write-Host "Desktop shortcut: Brain Cell Counter (v2.5.1)"
     Write-Host "Next: run 02_Install_QuPath_and_Extensions.cmd and 03_Install_Miniforge_Cellpose.cmd."
     exit 0
 } catch {

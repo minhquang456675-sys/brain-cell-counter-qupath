@@ -1,4 +1,4 @@
-// Brain Cell Counter v2.5.0 - headless QuPath analysis engine
+// Brain Cell Counter v2.5.1 - headless QuPath analysis engine
 //
 // This script is launched by the Python v2 GUI. It expects ABBA atlas
 // registration files to have already been exported into the QuPath entry.
@@ -310,7 +310,7 @@ boolean atlasReady = namedAtlasRoot != null && !leafRegions.isEmpty() && ontolog
         ontologyMatchedLeafIds > 0
 
 def validation = [
-        version             : '2.5.0',
+        version             : '2.5.1',
         image               : imageName,
         channels            : channelCount,
         annotations         : annotations.size(),
@@ -500,7 +500,7 @@ if (mode == 'cellpose-calibrate') {
     }
 
     def calibration = [
-            version: '2.5.0',
+            version: '2.5.1',
             mode: 'cellpose-calibrate',
             image: imageName,
             roiCount: cropDefinitions.size(),
@@ -671,7 +671,7 @@ if (mode == 'threshold-profile') {
         event('progress', [percent: 96, stage: "Calculating ${pairKeys.join(' + ')} double-positive threshold grid"])
 
     def profile = [
-            version             : '2.5.0',
+            version             : '2.5.1',
             mode                : 'threshold-profile',
             image               : imageName,
             detections          : profileDetections.size(),
@@ -1139,7 +1139,7 @@ if (!ImageIO.write(atlasImage, 'PNG', atlasOutputFile))
 event('progress', [percent: 98, stage: 'Atlas overlay PNG complete'])
 
 def summary = [
-        version: '2.5.0',
+        version: '2.5.1',
         image: imageName,
         detectionSource: reused ? 'reused' : 'cellpose',
         counts: counts,
