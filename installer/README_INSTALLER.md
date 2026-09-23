@@ -1,4 +1,4 @@
-# Brain Cell Counter v2.2.2 — Windows installer package
+# Brain Cell Counter v2.3.0 — Windows installer package
 
 Open `STEP_BY_STEP_INSTALLATION_GUIDE.html`, then run the numbered files in
 order:

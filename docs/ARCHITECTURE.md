@@ -12,7 +12,7 @@
 | Classic GUI | `brain_cell_counter/hybrid_app.py` | Explicit recovery interface retained for compatibility; it is not opened by the standard workflow. |
 | Threshold optimizer | `brain_cell_counter/threshold_optimizer.py` | Dataset-level threshold calculations and CSV, JSON, and HTML reports. |
 | Calibration model | `brain_cell_counter/calibration.py` | Scale-bar endpoint proposals, physical-unit conversion, project matching, manifests, and backups. |
-| Calibration wizard | `brain_cell_counter/calibration_wizard.py` | Sequential multi-image preview generation, human review, and confirmed QuPath metadata writes. |
+| Calibration wizard | `brain_cell_counter/calibration_wizard.py` | Dedicated three-step light workspace for sequential multi-image preview generation, human review, and confirmed QuPath metadata writes. |
 | Fiji calibration exporter | `qupath_scripts/Brain_Cell_Counter_Fiji_Calibration_v1.0.groovy` | Writes a new calibrated OME-TIFF through Bio-Formats and verifies geometry, channels, bit depth, and physical pixel size. |
 | Results preview | `brain_cell_counter/results_preview.py` | Discovers regional CSV outputs, defaults to essential columns, exports user-selected compact CSVs, and opens the exact saved image entry in the QuPath desktop viewer. |
 | QuPath engine | `qupath_scripts/Brain_Cell_Counter_QuPath_Engine_v1.0.groovy` | Cellpose execution/reuse, measurement, classification, Allen-region assignment, QuPath save, and export. |

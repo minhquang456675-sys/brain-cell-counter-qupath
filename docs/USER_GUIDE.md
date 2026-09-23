@@ -7,7 +7,8 @@ cards and controls, hover and pressed feedback, stable immediate page switching,
 subtle elevation, automatic monitor sizing, and a fixed workflow sidebar. Global
 threshold optimization, Results Preview, project-link repair, and Cellpose
 parameter suggestion are available directly in this interface. **Open
-calibration** starts only the focused human-review wizard; it does not open the
+calibration** starts a focused three-step human-review workspace with live
+Images, Scanned, Confirmed, and Project matched metrics; it does not open the
 classic application shell.
 
 The current project bar stays visible across the application and reports the
@@ -120,6 +121,11 @@ burned-in scale bar.
      Project matching is not required.
    - **APPLY CONFIRMED TO QUPATH** updates only backed-up QuPath metadata and
      leaves the source files unchanged.
+
+The Calibration table uses green rows for confirmed/applied/verified records,
+amber rows for records awaiting review, and red rows for records needing
+attention. Actions remain disabled until the required scan, confirmation, or
+project match exists.
 
 Unconfirmed rows cannot be applied. Files not matched uniquely to the selected
 QuPath project can be included in the manifest but cannot change the project.

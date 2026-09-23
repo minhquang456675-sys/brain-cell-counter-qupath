@@ -36,6 +36,17 @@ from .calibration import (
 class CalibrationWizard(tk.Toplevel):
     """Batch scale-bar review with explicit human confirmation before writes."""
 
+    BG = "#F7F7F8"
+    SURFACE = "#FFFFFF"
+    BORDER = "#E5E5E5"
+    TEXT = "#202123"
+    MUTED = "#6B6B6B"
+    PRIMARY = "#202123"
+    ACCENT = "#10A37F"
+    ACCENT_DARK = "#0D8A6C"
+    WARNING = "#B45309"
+    ERROR = "#B42318"
+
     def __init__(
         self,
         parent: tk.Misc,
@@ -77,40 +88,123 @@ class CalibrationWizard(tk.Toplevel):
         self.qc_directory = self.output_directory / "qc"
         self.fiji_output_directory = self.output_directory / "fiji_calibrated"
         self.fiji_report_directory = self.output_directory / "fiji_verification"
+        self._configure_styles()
         self._build_ui()
         self.protocol("WM_DELETE_WINDOW", self._close)
         self.after(100, self._drain_events)
 
+    def _configure_styles(self) -> None:
+        """Apply the same restrained light visual language as the Qt shell."""
+        self.configure(background=self.BG)
+        self.option_add("*Font", ("Segoe UI", 10))
+        style = ttk.Style(self)
+        if "clam" in style.theme_names():
+            style.theme_use("clam")
+        style.configure("App.TFrame", background=self.BG)
+        style.configure("Card.TFrame", background=self.SURFACE, borderwidth=1, relief="solid")
+        style.configure("Header.TLabel", background=self.BG, foreground=self.TEXT, font=("Segoe UI", 20, "bold"))
+        style.configure("Subtitle.TLabel", background=self.BG, foreground=self.MUTED, font=("Segoe UI", 10))
+        style.configure("CardTitle.TLabel", background=self.SURFACE, foreground=self.TEXT, font=("Segoe UI", 11, "bold"))
+        style.configure("CardText.TLabel", background=self.SURFACE, foreground=self.MUTED, font=("Segoe UI", 9))
+        style.configure("Metric.TLabel", background=self.SURFACE, foreground=self.TEXT, font=("Segoe UI", 18, "bold"))
+        style.configure("MetricName.TLabel", background=self.SURFACE, foreground=self.MUTED, font=("Segoe UI", 9))
+        style.configure("Status.TLabel", background="#E8F7F2", foreground="#08765B", font=("Segoe UI", 9, "bold"), padding=(10, 5))
+        style.configure("Primary.TButton", background=self.PRIMARY, foreground="#FFFFFF", borderwidth=0, padding=(14, 9), font=("Segoe UI", 9, "bold"))
+        style.map("Primary.TButton", background=[("active", "#343541"), ("pressed", "#111111"), ("disabled", "#B7B7B7")])
+        style.configure("Accent.TButton", background=self.ACCENT, foreground="#FFFFFF", borderwidth=0, padding=(14, 9), font=("Segoe UI", 9, "bold"))
+        style.map("Accent.TButton", background=[("active", self.ACCENT_DARK), ("pressed", "#08765B"), ("disabled", "#A8DCCF")])
+        style.configure("Secondary.TButton", background=self.SURFACE, foreground=self.TEXT, bordercolor=self.BORDER, borderwidth=1, padding=(12, 8))
+        style.map("Secondary.TButton", background=[("active", "#F1F1F1"), ("pressed", "#E8E8E8"), ("disabled", "#F5F5F5")])
+        style.configure("Danger.TButton", background="#FFF1F0", foreground=self.ERROR, bordercolor="#FECDCA", borderwidth=1, padding=(12, 8))
+        style.map("Danger.TButton", background=[("active", "#FEE4E2"), ("disabled", "#F7F7F8")])
+        style.configure("Calibration.Treeview", background=self.SURFACE, fieldbackground=self.SURFACE, foreground=self.TEXT, rowheight=32, borderwidth=0)
+        style.configure("Calibration.Treeview.Heading", background="#F3F4F6", foreground=self.TEXT, borderwidth=0, padding=(8, 8), font=("Segoe UI", 9, "bold"))
+        style.map("Calibration.Treeview", background=[("selected", "#DDF3ED")], foreground=[("selected", self.TEXT)])
+        style.configure("Calibration.Horizontal.TProgressbar", troughcolor="#ECECEC", background=self.ACCENT, borderwidth=0, thickness=8)
+
+    @staticmethod
+    def _center_window(window: tk.Misc, requested_width: int, requested_height: int) -> None:
+        """Fit a window to the active monitor and place it near the center."""
+        screen_width = window.winfo_screenwidth()
+        screen_height = window.winfo_screenheight()
+        width = min(requested_width, max(940, screen_width - 80))
+        height = min(requested_height, max(620, screen_height - 100))
+        x = max(0, (screen_width - width) // 2)
+        y = max(0, (screen_height - height) // 2 - 20)
+        window.geometry(f"{width}x{height}+{x}+{y}")
+
+    def _metric_card(self, parent: tk.Misc, title: str, variable: tk.StringVar) -> ttk.Frame:
+        """Create one compact live batch-summary card."""
+        card = ttk.Frame(parent, style="Card.TFrame", padding=(16, 12))
+        ttk.Label(card, textvariable=variable, style="Metric.TLabel").pack(anchor="w")
+        ttk.Label(card, text=title, style="MetricName.TLabel").pack(anchor="w", pady=(1, 0))
+        return card
+
     def _build_ui(self) -> None:
-        root = ttk.Frame(self, padding=12)
+        self._center_window(self, 1240, 850)
+        root = ttk.Frame(self, style="App.TFrame", padding=(24, 20, 24, 18))
         root.pack(fill="both", expand=True)
 
+        header = ttk.Frame(root, style="App.TFrame")
+        header.pack(fill="x")
+        title_area = ttk.Frame(header, style="App.TFrame")
+        title_area.pack(side="left", fill="x", expand=True)
+        ttk.Label(title_area, text="Calibration", style="Header.TLabel").pack(anchor="w")
         ttk.Label(
-            root,
-            text="Batch calibration from scale bars",
-            font=("Segoe UI", 15, "bold"),
-        ).pack(anchor="w")
-        ttk.Label(
-            root,
-            text=(
-                "Add many stitched images, scan them sequentially, review the proposed scale-bar endpoints, "
-                "and confirm every calibration before exporting a new Fiji-calibrated OME-TIFF or updating QuPath metadata. Source images are never resized or overwritten."
-            ),
-            wraplength=1120,
-        ).pack(anchor="w", pady=(3, 10))
+            title_area,
+            text="Human-reviewed scale recovery for stitched microscopy images",
+            style="Subtitle.TLabel",
+        ).pack(anchor="w", pady=(2, 0))
+        ttk.Label(header, text="HUMAN REVIEW REQUIRED", style="Status.TLabel").pack(side="right", anchor="n", pady=(4, 0))
 
-        toolbar = ttk.Frame(root)
-        toolbar.pack(fill="x", pady=(0, 8))
-        self.add_files_button = ttk.Button(toolbar, text="ADD IMAGES…", command=self._add_files)
+        workflow = ttk.Frame(root, style="App.TFrame")
+        workflow.pack(fill="x", pady=(18, 14))
+        step_text = (
+            ("1  Add images", "Choose files, a folder, or all project entries."),
+            ("2  Scan & review", "Verify both endpoints and the printed distance."),
+            ("3  Export or apply", "Create verified copies or backed-up metadata."),
+        )
+        for column, (title, description) in enumerate(step_text):
+            card = ttk.Frame(workflow, style="Card.TFrame", padding=(14, 10))
+            card.grid(row=0, column=column, sticky="nsew", padx=(0 if column == 0 else 5, 0 if column == 2 else 5))
+            ttk.Label(card, text=title, style="CardTitle.TLabel").pack(anchor="w")
+            ttk.Label(card, text=description, style="CardText.TLabel").pack(anchor="w", pady=(2, 0))
+            workflow.columnconfigure(column, weight=1)
+
+        summary = ttk.Frame(root, style="App.TFrame")
+        summary.pack(fill="x", pady=(0, 14))
+        self.total_metric = tk.StringVar(value="0")
+        self.scanned_metric = tk.StringVar(value="0")
+        self.confirmed_metric = tk.StringVar(value="0")
+        self.matched_metric = tk.StringVar(value="0")
+        for column, (title, variable) in enumerate((
+            ("Images", self.total_metric),
+            ("Scanned", self.scanned_metric),
+            ("Confirmed", self.confirmed_metric),
+            ("Project matched", self.matched_metric),
+        )):
+            card = self._metric_card(summary, title, variable)
+            card.grid(row=0, column=column, sticky="nsew", padx=(0 if column == 0 else 5, 0 if column == 3 else 5))
+            summary.columnconfigure(column, weight=1)
+
+        table_card = ttk.Frame(root, style="Card.TFrame", padding=(16, 14))
+        table_card.pack(fill="both", expand=True)
+        table_header = ttk.Frame(table_card, style="Card.TFrame")
+        table_header.pack(fill="x", pady=(0, 10))
+        heading = ttk.Frame(table_header, style="Card.TFrame")
+        heading.pack(side="left", fill="x", expand=True)
+        ttk.Label(heading, text="Calibration batch", style="CardTitle.TLabel").pack(anchor="w")
+        ttk.Label(heading, text="Double-click a scanned row to review its scale bar.", style="CardText.TLabel").pack(anchor="w", pady=(2, 0))
+        toolbar = ttk.Frame(table_header, style="Card.TFrame")
+        toolbar.pack(side="right")
+        self.add_files_button = ttk.Button(toolbar, text="Add images…", command=self._add_files, style="Secondary.TButton")
         self.add_files_button.pack(side="left")
-        self.add_folder_button = ttk.Button(toolbar, text="ADD FOLDER…", command=self._add_folder)
+        self.add_folder_button = ttk.Button(toolbar, text="Add folder…", command=self._add_folder, style="Secondary.TButton")
         self.add_folder_button.pack(side="left", padx=6)
-        self.add_project_button = ttk.Button(toolbar, text="ADD ALL PROJECT IMAGES", command=self._add_project_images)
+        self.add_project_button = ttk.Button(toolbar, text="Add project images", command=self._add_project_images, style="Secondary.TButton")
         self.add_project_button.pack(side="left")
-        self.remove_button = ttk.Button(toolbar, text="REMOVE SELECTED", command=self._remove_selected)
+        self.remove_button = ttk.Button(toolbar, text="Remove", command=self._remove_selected, style="Danger.TButton")
         self.remove_button.pack(side="left", padx=(6, 0))
-        self.scan_button = ttk.Button(toolbar, text="SCAN SCALE BARS", command=self._start_scan)
-        self.scan_button.pack(side="right")
 
         columns = (
             "file",
@@ -122,7 +216,9 @@ class CalibrationWizard(tk.Toplevel):
             "confidence",
             "status",
         )
-        self.table = ttk.Treeview(root, columns=columns, show="headings", selectmode="extended")
+        table_frame = ttk.Frame(table_card, style="Card.TFrame")
+        table_frame.pack(fill="both", expand=True)
+        self.table = ttk.Treeview(table_frame, columns=columns, show="headings", selectmode="extended", style="Calibration.Treeview")
         headings = {
             "file": "File",
             "project": "QuPath entry",
@@ -137,42 +233,70 @@ class CalibrationWizard(tk.Toplevel):
         for column in columns:
             self.table.heading(column, text=headings[column])
             self.table.column(column, width=widths[column], anchor="w")
-        table_frame = ttk.Frame(root)
-        table_frame.pack(fill="both", expand=True)
-        self.table.pack(in_=table_frame, side="left", fill="both", expand=True)
+        self.table.grid(row=0, column=0, sticky="nsew")
         scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=self.table.yview)
-        scrollbar.pack(side="right", fill="y")
-        self.table.configure(yscrollcommand=scrollbar.set)
+        scrollbar.grid(row=0, column=1, sticky="ns")
+        horizontal_scrollbar = ttk.Scrollbar(table_frame, orient="horizontal", command=self.table.xview)
+        horizontal_scrollbar.grid(row=1, column=0, sticky="ew")
+        table_frame.rowconfigure(0, weight=1)
+        table_frame.columnconfigure(0, weight=1)
+        self.table.configure(yscrollcommand=scrollbar.set, xscrollcommand=horizontal_scrollbar.set)
         self.table.bind("<Double-1>", lambda _event: self._review_selected())
+        self.table.bind("<<TreeviewSelect>>", lambda _event: self._update_action_states())
+        self.table.tag_configure("complete", background="#ECFDF3", foreground="#08765B")
+        self.table.tag_configure("review", background="#FFFAEB", foreground="#93370D")
+        self.table.tag_configure("attention", background="#FEF3F2", foreground="#B42318")
 
-        actions = ttk.Frame(root)
-        actions.pack(fill="x", pady=(8, 0))
-        self.review_button = ttk.Button(actions, text="REVIEW SELECTED", command=self._review_selected)
-        self.review_button.pack(side="left")
-        self.export_button = ttk.Button(actions, text="EXPORT MANIFEST", command=self._export_manifest)
+        actions = ttk.Frame(root, style="App.TFrame")
+        actions.pack(fill="x", pady=(14, 0))
+        self.scan_button = ttk.Button(actions, text="Scan scale bars", command=self._start_scan, style="Primary.TButton")
+        self.scan_button.pack(side="left")
+        self.review_button = ttk.Button(actions, text="Review selected", command=self._review_selected, style="Primary.TButton")
+        self.review_button.pack(side="left", padx=(6, 0))
+        self.export_button = ttk.Button(actions, text="Export manifest", command=self._export_manifest, style="Secondary.TButton")
         self.export_button.pack(side="left", padx=6)
         self.apply_button = ttk.Button(
             actions,
-            text="APPLY CONFIRMED TO QUPATH",
+            text="Apply confirmed to QuPath",
             command=self._start_apply,
+            style="Secondary.TButton",
         )
         self.apply_button.pack(side="left")
         self.fiji_button = ttk.Button(
             actions,
-            text="EXPORT CALIBRATED WITH FIJI",
+            text="Export calibrated with Fiji",
             command=self._start_fiji_export,
+            style="Accent.TButton",
         )
         self.fiji_button.pack(side="left", padx=(6, 0))
-        self.stop_button = ttk.Button(actions, text="STOP", command=self._stop, state="disabled")
+        self.stop_button = ttk.Button(actions, text="Stop", command=self._stop, state="disabled", style="Danger.TButton")
         self.stop_button.pack(side="left", padx=6)
-        ttk.Button(actions, text="CLOSE", command=self._close).pack(side="right")
+        ttk.Button(actions, text="Close", command=self._close, style="Secondary.TButton").pack(side="right")
 
         self.progress_value = tk.DoubleVar(value=0.0)
         self.progress_text = tk.StringVar(value="Ready")
-        ttk.Label(root, textvariable=self.progress_text).pack(fill="x", pady=(8, 2))
-        ttk.Progressbar(root, maximum=100, variable=self.progress_value).pack(fill="x")
-        self.log = tk.Text(root, height=7, wrap="word", state="disabled")
-        self.log.pack(fill="x", pady=(8, 0))
+        activity = ttk.Frame(root, style="Card.TFrame", padding=(16, 12))
+        activity.pack(fill="x", pady=(14, 0))
+        ttk.Label(activity, text="Activity", style="CardTitle.TLabel").pack(anchor="w")
+        ttk.Label(activity, textvariable=self.progress_text, style="CardText.TLabel").pack(fill="x", pady=(4, 5))
+        ttk.Progressbar(activity, maximum=100, variable=self.progress_value, style="Calibration.Horizontal.TProgressbar").pack(fill="x")
+        self.log = tk.Text(
+            activity,
+            height=5,
+            wrap="word",
+            state="disabled",
+            background="#FAFAFA",
+            foreground=self.TEXT,
+            relief="flat",
+            borderwidth=0,
+            highlightthickness=1,
+            highlightbackground=self.BORDER,
+            padx=10,
+            pady=8,
+            font=("Consolas", 9),
+        )
+        self.log.pack(fill="x", pady=(10, 0))
+        self._update_action_states()
 
     def _append_log(self, text: str) -> None:
         self.log.configure(state="normal")
@@ -182,21 +306,42 @@ class CalibrationWizard(tk.Toplevel):
 
     def _set_running(self, running: bool) -> None:
         self.running = running
-        state = "disabled" if running else "normal"
-        for button in (
-            self.add_files_button,
-            self.add_folder_button,
-            self.add_project_button,
-            self.remove_button,
-            self.scan_button,
-            self.review_button,
-            self.export_button,
-            self.apply_button,
-            self.fiji_button,
-        ):
-            button.configure(state=state)
-        self.stop_button.configure(state="normal" if running else "disabled")
+        if running:
+            for button in (
+                self.add_files_button,
+                self.add_folder_button,
+                self.add_project_button,
+                self.remove_button,
+                self.scan_button,
+                self.review_button,
+                self.export_button,
+                self.apply_button,
+                self.fiji_button,
+            ):
+                button.configure(state="disabled")
+            self.stop_button.configure(state="normal")
+        else:
+            self.stop_button.configure(state="disabled")
+            self._update_action_states()
         self.busy_callback(running)
+
+    def _update_action_states(self) -> None:
+        """Enable only actions supported by the current reviewed batch state."""
+        if self.running:
+            return
+        has_records = bool(self.records)
+        selection = self._selected_index() if hasattr(self, "table") else None
+        selected_scanned = selection is not None and bool(self.records[selection].preview_path)
+        any_scanned = any(record.preview_path for record in self.records)
+        self.add_files_button.configure(state="normal")
+        self.add_folder_button.configure(state="normal")
+        self.add_project_button.configure(state="normal")
+        self.remove_button.configure(state="normal" if self.table.selection() else "disabled")
+        self.scan_button.configure(state="normal" if has_records else "disabled")
+        self.review_button.configure(state="normal" if selected_scanned or any_scanned else "disabled")
+        self.export_button.configure(state="normal" if has_records else "disabled")
+        self.apply_button.configure(state="normal" if valid_confirmed_records(self.records) else "disabled")
+        self.fiji_button.configure(state="normal" if valid_confirmed_fiji_records(self.records) else "disabled")
 
     def _add_paths(self, paths: list[Path]) -> None:
         existing = {str(Path(record.source_path).resolve()).casefold() for record in self.records}
@@ -291,6 +436,14 @@ class CalibrationWizard(tk.Toplevel):
                 status = "Needs attention"
             else:
                 status = "Not scanned"
+            if record.fiji_verified or record.applied or record.confirmed:
+                row_tag = "complete"
+            elif record.preview_path:
+                row_tag = "review"
+            elif record.note:
+                row_tag = "attention"
+            else:
+                row_tag = ""
             self.table.insert(
                 "",
                 "end",
@@ -305,9 +458,15 @@ class CalibrationWizard(tk.Toplevel):
                     confidence,
                     status,
                 ),
+                tags=(row_tag,) if row_tag else (),
             )
             if record.source_path in selection_paths:
                 self.table.selection_add(str(index))
+        self.total_metric.set(str(len(self.records)))
+        self.scanned_metric.set(str(sum(bool(record.preview_path) for record in self.records)))
+        self.confirmed_metric.set(str(sum(bool(record.confirmed) for record in self.records)))
+        self.matched_metric.set(str(sum(bool(record.image_name) for record in self.records)))
+        self._update_action_states()
 
     @staticmethod
     def _decode_event(line: str) -> dict | None:
@@ -433,10 +592,25 @@ class CalibrationWizard(tk.Toplevel):
 
         window = tk.Toplevel(self)
         window.title(f"Review calibration {index + 1}/{len(self.records)} — {Path(record.source_path).name}")
-        window.geometry("1120x820")
+        window.configure(background=self.BG)
+        self._center_window(window, 1160, 860)
         window.minsize(850, 650)
         window.transient(self)
         window.grab_set()
+
+        review_root = ttk.Frame(window, style="App.TFrame", padding=(22, 18, 22, 18))
+        review_root.pack(fill="both", expand=True)
+        review_header = ttk.Frame(review_root, style="App.TFrame")
+        review_header.pack(fill="x", pady=(0, 14))
+        header_text = ttk.Frame(review_header, style="App.TFrame")
+        header_text.pack(side="left", fill="x", expand=True)
+        ttk.Label(header_text, text="Review scale bar", style="Header.TLabel").pack(anchor="w")
+        ttk.Label(
+            header_text,
+            text=f"Image {index + 1} of {len(self.records)}  •  {Path(record.source_path).name}",
+            style="Subtitle.TLabel",
+        ).pack(anchor="w", pady=(2, 0))
+        ttk.Label(review_header, text="CONFIRM MANUALLY", style="Status.TLabel").pack(side="right", anchor="n", pady=(4, 0))
 
         source_image = Image.open(preview_path).convert("RGB")
         has_candidate = None not in (
@@ -458,12 +632,23 @@ class CalibrationWizard(tk.Toplevel):
             review_image = source_image
             offset_x, offset_y = 0, 0
         display_image = review_image.copy()
-        display_image.thumbnail((1040, 610), Image.Resampling.LANCZOS)
+        display_image.thumbnail((1080, 570), Image.Resampling.LANCZOS)
         scale_x = display_image.width / review_image.width
         scale_y = display_image.height / review_image.height
         photo = ImageTk.PhotoImage(display_image)
-        canvas = tk.Canvas(window, width=display_image.width, height=display_image.height, background="black")
-        canvas.pack(padx=10, pady=10)
+        image_card = ttk.Frame(review_root, style="Card.TFrame", padding=10)
+        image_card.pack(fill="both", expand=True)
+        canvas = tk.Canvas(
+            image_card,
+            width=display_image.width,
+            height=display_image.height,
+            background="#111111",
+            relief="flat",
+            borderwidth=0,
+            highlightthickness=0,
+            cursor="crosshair",
+        )
+        canvas.pack(expand=True)
         canvas.create_image(0, 0, image=photo, anchor="nw")
         canvas.image = photo
 
@@ -516,10 +701,10 @@ class CalibrationWizard(tk.Toplevel):
         canvas.bind("<Button-1>", canvas_click)
         redraw()
 
-        controls = ttk.Frame(window, padding=(12, 0, 12, 10))
-        controls.pack(fill="x")
-        ttk.Label(controls, textvariable=instruction, wraplength=1050).grid(row=0, column=0, columnspan=8, sticky="w", pady=(0, 8))
-        ttk.Label(controls, text="Printed distance").grid(row=1, column=0, sticky="w")
+        controls = ttk.Frame(review_root, style="Card.TFrame", padding=(16, 12))
+        controls.pack(fill="x", pady=(12, 0))
+        ttk.Label(controls, textvariable=instruction, style="CardText.TLabel", wraplength=1080).grid(row=0, column=0, columnspan=8, sticky="w", pady=(0, 10))
+        ttk.Label(controls, text="Printed distance", style="CardTitle.TLabel").grid(row=1, column=0, sticky="w")
         distance_value = tk.StringVar(value=f"{record.known_distance:g}" if record.known_distance else "")
         ttk.Entry(controls, textvariable=distance_value, width=14).grid(row=1, column=1, padx=(6, 12))
         unit_value = tk.StringVar(value=record.known_unit or "µm")
@@ -527,9 +712,9 @@ class CalibrationWizard(tk.Toplevel):
         metadata_text = "Unavailable"
         if record.metadata_pixel_width_microns is not None:
             metadata_text = f"{record.metadata_pixel_width_microns:.6g} µm/px"
-        ttk.Label(controls, text=f"Current metadata: {metadata_text}").grid(row=1, column=3, padx=18, sticky="w")
+        ttk.Label(controls, text=f"Current metadata: {metadata_text}", style="CardText.TLabel").grid(row=1, column=3, padx=18, sticky="w")
         proposal_text = tk.StringVar(value="Proposal: enter distance")
-        ttk.Label(controls, textvariable=proposal_text, font=("Segoe UI", 10, "bold")).grid(row=1, column=4, padx=18, sticky="w")
+        ttk.Label(controls, textvariable=proposal_text, style="CardTitle.TLabel").grid(row=1, column=4, padx=18, sticky="w")
 
         def calculate() -> float | None:
             if len(points) != 2:
@@ -554,8 +739,8 @@ class CalibrationWizard(tk.Toplevel):
         unit_value.trace_add("write", lambda *_args: calculate())
         calculate()
 
-        buttons = ttk.Frame(window, padding=(12, 0, 12, 12))
-        buttons.pack(fill="x")
+        buttons = ttk.Frame(review_root, style="App.TFrame")
+        buttons.pack(fill="x", pady=(12, 0))
 
         def confirm() -> None:
             proposal = calculate()
@@ -603,8 +788,8 @@ class CalibrationWizard(tk.Toplevel):
                 self.table.see(str(next_index))
                 self.after(80, lambda: self._open_review(next_index))
 
-        ttk.Button(buttons, text="CANCEL", command=window.destroy).pack(side="right")
-        ttk.Button(buttons, text="CONFIRM & NEXT", command=confirm).pack(side="right", padx=(0, 8))
+        ttk.Button(buttons, text="Cancel", command=window.destroy, style="Secondary.TButton").pack(side="right")
+        ttk.Button(buttons, text="Confirm & next", command=confirm, style="Accent.TButton").pack(side="right", padx=(0, 8))
 
     def _manifest_path(self) -> Path:
         return self.output_directory / "calibration_manifest_v1.2.csv"

@@ -2,6 +2,19 @@
 
 All user-visible releases follow semantic versioning.
 
+## 2.3.0 — 2026-09-23
+
+### Added
+
+- Calibration now uses a dedicated ChatGPT-inspired light workspace with a
+  three-step workflow, live batch metrics, clearer activity feedback, and a
+  redesigned scale-bar review window.
+- Calibration actions are enabled only when the batch state supports them;
+  status-colored rows distinguish confirmed, review-required, and failed
+  records, and the table supports both vertical and horizontal scrolling.
+- Calibration and review windows automatically fit and center on the active
+  monitor while retaining the existing human-confirmation safeguards.
+
 ## 2.2.2 — 2026-09-23
 
 ### Fixed
