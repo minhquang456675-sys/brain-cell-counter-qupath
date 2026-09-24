@@ -25,6 +25,7 @@ Flourescent counting/
 ├── config/
 │   └── functional_subregions_v1.json  Versioned curated Allen groupings
 ├── installer/                   Installer source and dependency verification
+│   └── Build_Codex_Transfer_Package.ps1  Portable source/history handoff
 ├── docs/                        Architecture, methods, installation, user guide
 ├── run_brain_cell_counter_v1.0.py  Stable Python launcher used by shortcuts
 ├── Start_Brain_Cell_Counter_v1.0.bat  Source-tree Windows launcher

@@ -61,3 +61,10 @@ directly. Rebuild them from source when creating a release.
 
 See [`../installer/README_INSTALLER.md`](../installer/README_INSTALLER.md) and
 [`../installer/THIRD_PARTY_NOTICES.md`](../installer/THIRD_PARTY_NOTICES.md).
+
+## Transfer development to another Codex computer
+
+Run `installer/Build_Codex_Transfer_Package.ps1` to create one portable ZIP
+containing a source snapshot, full Git bundle, version-matched Windows
+installer, transfer manifest, and checksums. Follow
+[`CODEX_TRANSFER.md`](CODEX_TRANSFER.md) on the destination computer.

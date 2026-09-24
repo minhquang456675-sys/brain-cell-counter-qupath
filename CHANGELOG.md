@@ -12,6 +12,9 @@ All user-visible releases follow semantic versioning.
 - Analysis requests and regional CSV rows record the subregion configuration
   schema and SHA-256 provenance. Editing the mapping changes the checkpoint
   signature, preventing stale completed-entry reuse.
+- Added a reproducible Codex transfer builder that packages the tracked source,
+  complete local Git history, version-matched installer, manifest, checksums,
+  and destination-machine instructions without local data or settings.
 
 ### Changed
 
