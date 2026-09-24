@@ -60,7 +60,9 @@ try {
     if (-not $commit) { throw "Could not determine the current Git commit." }
     git archive --format=zip --output=$sourceZip HEAD
     if ($LASTEXITCODE -ne 0) { throw "git archive failed." }
-    git bundle create $historyBundle --all
+    # Export project branches and tags only; omit temporary refs created by
+    # development tools such as Codex turn-diff checkpoints.
+    git bundle create $historyBundle --branches --tags
     if ($LASTEXITCODE -ne 0) { throw "git bundle failed." }
 } finally {
     Pop-Location
